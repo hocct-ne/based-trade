@@ -1,9 +1,31 @@
 import { toast } from "@/hooks/use-toast";
-import handleClientError from "./handleClientError";
+import { nextConfig } from "@/config";
+import { ReadonlyURLSearchParams } from "next/navigation";
 
 interface Props {
   error: Error;
   parentKey?: string;
+}
+
+export function handleClientError({
+  error,
+  pathname,
+  searchParams,
+}: {
+  error: Error;
+  pathname: string;
+  searchParams: ReadonlyURLSearchParams | null;
+}) {
+  fetch(`${nextConfig.nextRouteApi}/api/log-error`, {
+    method: "POST",
+    body: JSON.stringify({
+      name: error?.name,
+      cause: error?.cause,
+      stack: error?.stack,
+      message: error?.message,
+      pathname: `${pathname}?${searchParams?.toString()}`,
+    }),
+  });
 }
 
 export function isObject(value: any) {
@@ -71,7 +93,7 @@ export function handleWhenStringOrArrayOrObject({
   return errorMessage;
 }
 
-function handleAPIError({ error }: Props) {
+function handleReactQueryAPIError({ error }: Props) {
   const errorResponseData = error.message;
 
   const toastMessage = handleWhenStringOrArrayOrObject({
@@ -85,4 +107,4 @@ function handleAPIError({ error }: Props) {
   });
 }
 
-export default handleAPIError;
+export default handleReactQueryAPIError;

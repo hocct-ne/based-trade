@@ -3,8 +3,6 @@ import {
   MutationCache,
   QueryCache,
   QueryClientConfig,
-  UseMutationOptions,
-  UseQueryOptions,
 } from "@tanstack/react-query";
 
 export const queryConfig: QueryClientConfig = {
@@ -32,21 +30,3 @@ export const queryConfig: QueryClientConfig = {
     },
   }),
 };
-
-export type ExtractFnReturnType<
-  FnType extends (...args: unknown[]) => unknown
-> = Awaited<ReturnType<FnType>>;
-
-export type QueryConfig<QueryFnType extends (...args: unknown[]) => unknown> =
-  Omit<
-    UseQueryOptions<ExtractFnReturnType<QueryFnType>>,
-    "queryKey" | "queryFn"
-  >;
-
-export type MutationConfig<
-  MutationFnType extends (...args: unknown[]) => unknown
-> = UseMutationOptions<
-  ExtractFnReturnType<MutationFnType>,
-  Error,
-  Parameters<MutationFnType>[0]
->;

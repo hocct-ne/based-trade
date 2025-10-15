@@ -1,5 +1,11 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useGuestOrderMutation,
+  useOrderBookListQuery,
+} from "@/queries/useOrderBook";
+import { useEffect, useState } from "react";
+import { getHyperClient } from "@/lib/hyperClient";
 
 interface OrderBookEntry {
   price: number;
@@ -26,7 +32,18 @@ export default function OrderBook({
     maxTotal: number
   ) => {
     const percentage = (entry.total / maxTotal) * 100;
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
+    // const { data, refetch } = useOrderBookListQuery();
+
+    const nf5 = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 5,
+      maximumFractionDigits: 5,
+    });
+    if (!mounted) {
+      return null;
+    }
     return (
       <div
         key={entry.price}
@@ -43,14 +60,40 @@ export default function OrderBook({
           <span className={type === "bid" ? "text-success" : "text-danger"}>
             {entry.price.toFixed(2)}
           </span>
-          <span className="text-foreground">{entry.amount.toFixed(5)}</span>
+          <span className="text-foreground">{nf5.format(entry.amount)}</span>
           <span className="text-muted-foreground">
-            {entry.total.toFixed(5)}
+            {nf5.format(entry.total)}
           </span>
         </div>
       </div>
     );
   };
+  console.log("333");
+
+  const [candles, setCandles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const hyperClient = getHyperClient();
+    console.log("vv");
+
+    hyperClient.connect().then(() => {
+      console.log("✅ Connected to Hyperliquid");
+
+      hyperClient.subscriptions.subscribeToCandle(
+        "BTC-PERP",
+        "5m",
+        (candle) => {
+          setCandles((prev) => [...prev, candle]);
+          console.log("New candle:", candle);
+        }
+      );
+    });
+
+    return () => {
+      console.log("🧹 Cleaning up...");
+      hyperClient.ws.close();
+    };
+  }, []);
 
   const maxTotal = Math.max(
     ...asks.map((a) => a.total),
@@ -59,6 +102,10 @@ export default function OrderBook({
 
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
+      <div className="p-4">
+        📊 Listening to BTC-PERP live updates... {candles}{" "}
+      </div>
+      ;
       <Tabs defaultValue="orderbook" className="flex-1 flex flex-col">
         <TabsList className="w-full justify-start rounded-none border-b border-border h-10 bg-transparent p-0">
           <TabsTrigger

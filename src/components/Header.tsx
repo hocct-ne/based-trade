@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { ChevronDown, Settings } from "lucide-react";
-import { useTranslations } from "next-intl";
+// import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
