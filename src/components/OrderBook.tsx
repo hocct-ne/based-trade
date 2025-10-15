@@ -6,6 +6,8 @@ import {
 } from "@/queries/useOrderBook";
 import { useEffect, useState } from "react";
 import { getHyperClient } from "@/lib/hyperClient";
+import { useHyperCandle } from "@/hooks/useHyperCandle";
+import { Hyperliquid } from "@coin98-hyper/core";
 
 interface OrderBookEntry {
   price: number;
@@ -68,32 +70,9 @@ export default function OrderBook({
       </div>
     );
   };
-  console.log("333");
 
-  const [candles, setCandles] = useState<any[]>([]);
-
-  useEffect(() => {
-    const hyperClient = getHyperClient();
-    console.log("vv");
-
-    hyperClient.connect().then(() => {
-      console.log("✅ Connected to Hyperliquid");
-
-      hyperClient.subscriptions.subscribeToCandle(
-        "BTC-PERP",
-        "5m",
-        (candle) => {
-          setCandles((prev) => [...prev, candle]);
-          console.log("New candle:", candle);
-        }
-      );
-    });
-
-    return () => {
-      console.log("🧹 Cleaning up...");
-      hyperClient.ws.close();
-    };
-  }, []);
+  const candles = useHyperCandle();
+  console.log("candles", candles);
 
   const maxTotal = Math.max(
     ...asks.map((a) => a.total),

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import MarketTicker from "@/components/MarketTicker";
 import TradingChart from "@/components/TradingChart";
@@ -9,6 +9,7 @@ import BottomTabs from "@/components/BottomTabs";
 import AccountPanel from "@/components/AccountPanel";
 import SettingsModal from "@/components/SettingsModal";
 import WalletConnectModal from "@/components/WalletConnectModal";
+import { Hyperliquid } from "@coin98-hyper/core";
 
 // Mock data generators
 const generateMockOrders = (
@@ -23,6 +24,8 @@ const generateMockOrders = (
     return { price, amount, total };
   });
 };
+
+const sdk = Hyperliquid.createInstane({});
 
 export default function TradingPage() {
   const [walletConnected, setWalletConnected] = useState(false);

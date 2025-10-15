@@ -2,15 +2,13 @@
 
 import { Hyperliquid } from "@coin98-hyper/core";
 
-let client: Hyperliquid | null = null;
+let hyperClient: Hyperliquid | null = null;
 
 export function getHyperClient() {
-  if (!client) {
-    client = new Hyperliquid({
-      enableWs: true,
+  if (!hyperClient) {
+    hyperClient = new Hyperliquid({
       testnet: false,
-      maxReconnectAttempts: 3,
     });
   }
-  return client;
+  return hyperClient;
 }
