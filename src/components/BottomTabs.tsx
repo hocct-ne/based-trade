@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function BottomTabs() {
   return (
-    <div className="flex-1 bg-card border-t border-border">
+    <div className="flex-1 bg-card border-t p-2 border-r border-border overflow-auto h-full">
       <Tabs defaultValue="balances" className="w-full">
         <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-border h-10 p-0">
           <TabsTrigger
@@ -44,7 +44,7 @@ export default function BottomTabs() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="balances" className="p-4 min-h-[200px]">
+        <TabsContent value="balances" className="p-2 min-h-[200px]">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-muted-foreground border-b border-border">
@@ -91,7 +91,7 @@ export default function BottomTabs() {
           </div>
         </TabsContent>
 
-        <TabsContent value="positions" className="p-4">
+        <TabsContent value="positions" className="p-2">
           <div
             className="text-sm text-muted-foreground text-center py-8"
             data-testid="text-no-positions"
@@ -100,7 +100,7 @@ export default function BottomTabs() {
           </div>
         </TabsContent>
 
-        <TabsContent value="orders" className="p-4">
+        <TabsContent value="orders" className="p-2">
           <div
             className="text-sm text-muted-foreground text-center py-8"
             data-testid="text-no-orders"
@@ -109,13 +109,13 @@ export default function BottomTabs() {
           </div>
         </TabsContent>
 
-        <TabsContent value="trade-history" className="p-4">
+        <TabsContent value="trade-history" className="p-2">
           <div className="text-sm text-muted-foreground text-center py-8">
             No trade history
           </div>
         </TabsContent>
 
-        <TabsContent value="order-history" className="p-4">
+        <TabsContent value="order-history" className="p-2">
           <div className="text-sm text-muted-foreground text-center py-8">
             No order history
           </div>

@@ -1,9 +1,17 @@
 "use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TradeFormProps {
   symbol: string;
@@ -18,183 +26,187 @@ export default function TradeForm({
   currentPosition,
   markPrice,
 }: TradeFormProps) {
+  const [marginMode, setMarginMode] = useState<"cross" | "isolated">("cross");
+  const [leverage, setLeverage] = useState(20);
   const [orderType, setOrderType] = useState<"limit" | "market">("limit");
   const [side, setSide] = useState<"long" | "short">("long");
-  const [leverage, setLeverage] = useState([25]);
-  const [price, setPrice] = useState(markPrice.toString());
+  const [price, setPrice] = useState(markPrice.toFixed(2));
+  const [percent, setPercent] = useState(0);
   const [amount, setAmount] = useState("");
 
+  const handleSliderChange = (value: number[]) => {
+    setPercent(value[0]);
+    const usdValue = (availableFunds * value[0]) / 100;
+    const qty = usdValue / Number(price || markPrice);
+    setAmount(qty.toFixed(5));
+  };
+
   const handlePlaceOrder = () => {
-    console.log("Placing order:", {
+    console.log("🚀 Placing order:", {
+      symbol,
+      marginMode,
+      leverage,
       orderType,
       side,
-      leverage: leverage[0],
       price,
       amount,
+      percent,
     });
   };
 
   return (
-    <div className="flex flex-col h-full bg-card border-l border-border">
-      <div className="p-3 border-b border-border">
-        <Tabs
-          value={orderType}
-          onValueChange={(v) => setOrderType(v as any)}
-          className="w-full"
-        >
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="limit" data-testid="tab-limit-order">
-              Limit
-            </TabsTrigger>
-            <TabsTrigger value="market" data-testid="tab-market-order">
-              Market
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+    <div className="bg-background border border-border overflow-hidden flex flex-col">
+      <div className="flex justify-between items-center p-2 border-b border-border text-sm">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn("text-[13px] rounded-md px-3 py-1")}
+            onClick={() => setMarginMode("cross")}
+          >
+            Cross
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn("text-[13px] rounded-md px-3 py-1")}
+            onClick={() => setMarginMode("cross")}
+          >
+            {leverage}x
+          </Button>
+        </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-3">
-          <Button
-            variant={side === "long" ? "default" : "outline"}
-            className={side === "long" ? "bg-success hover:bg-success/90" : ""}
-            onClick={() => setSide("long")}
-            data-testid="button-long"
-          >
-            Long
-          </Button>
-          <Button
-            variant={side === "short" ? "default" : "outline"}
-            className={side === "short" ? "bg-danger hover:bg-danger/90" : ""}
-            onClick={() => setSide("short")}
-            data-testid="button-short"
-          >
-            Short
-          </Button>
+        <Select value={orderType} onValueChange={(v) => setOrderType(v as any)}>
+          <SelectTrigger className="flex-1 h-7 text-xs border-border">
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="limit">Limit</SelectItem>
+            <SelectItem value="market">Market</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex p-2 justify-between gap-2">
+        <Button
+          onClick={() => setSide("long")}
+          className={cn(
+            "border-b border-border flex-1 rounded-md",
+            side === "long"
+              ? "bg-[#29ab87] hover:bg-[#29ab87] text-black rounded-md"
+              : "bg-transparent"
+          )}
+        >
+          Long
+        </Button>
+        <Button
+          onClick={() => setSide("short")}
+          className={cn(
+            "border-b border-borde flex-1 rounded-md",
+            side === "short"
+              ? "bg-[#ff5252] hover:bg-[#ff5252] text-black"
+              : "bg-transparent"
+          )}
+        >
+          Short
+        </Button>
+      </div>
+
+      <div className="px-3 py-2 text-sm space-y-1">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Available Funds</span>
+          <span className="font-mono">{availableFunds.toFixed(2)} USDC</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Current Position</span>
+          <span className="font-mono">
+            {currentPosition.toFixed(5)} {symbol.split("-")[0]}
+          </span>
         </div>
       </div>
 
-      <div className="flex-1 p-3 space-y-4 overflow-auto">
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-sm text-muted-foreground">Leverage</label>
-            <span
-              className="text-sm font-mono font-semibold"
-              data-testid="text-leverage"
-            >
-              {leverage[0]}x
-            </span>
-          </div>
-          <Slider
-            value={leverage}
-            onValueChange={setLeverage}
-            min={1}
-            max={125}
-            step={1}
-            className="mb-2"
-            data-testid="slider-leverage"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1x</span>
-            <span>125x</span>
-          </div>
-        </div>
-
-        <div>
-          <label className="text-sm text-muted-foreground mb-2 block">
-            Available Funds
-          </label>
-          <div className="font-mono text-sm" data-testid="text-available-funds">
-            {availableFunds.toFixed(2)} USDC
-          </div>
-        </div>
-
-        <div>
-          <label className="text-sm text-muted-foreground mb-2 block">
-            Current Position
-          </label>
-          <div
-            className="font-mono text-sm"
-            data-testid="text-current-position"
-          >
-            {currentPosition.toFixed(5)} {symbol.split("-")[0]}
-          </div>
-        </div>
-
-        {orderType === "limit" && (
-          <div>
-            <label className="text-sm text-muted-foreground mb-2 block">
-              Price (USDC)
-            </label>
-            <Input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="font-mono text-right"
-              data-testid="input-price"
-            />
-          </div>
-        )}
-
-        <div>
-          <label className="text-sm text-muted-foreground mb-2 block">
-            Amount ({symbol.split("-")[0]})
+      {orderType === "limit" && (
+        <div className="px-3 py-2">
+          <label className="text-xs text-muted-foreground block mb-1">
+            Price (USDC)
           </label>
           <Input
             type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
             className="font-mono text-right"
-            placeholder="0.00"
-            data-testid="input-amount"
           />
-          <div className="flex gap-1 mt-2">
-            {[25, 50, 75, 100].map((pct) => (
-              <button
-                key={pct}
-                className="flex-1 text-xs py-1 bg-accent hover-elevate rounded-md"
-                onClick={() =>
-                  setAmount(
-                    ((availableFunds * pct) / 100 / markPrice).toFixed(5)
-                  )
-                }
-                data-testid={`button-amount-${pct}`}
-              >
-                {pct}%
-              </button>
-            ))}
-          </div>
         </div>
+      )}
 
-        <div className="space-y-1 text-xs">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Est. Liq:</span>
-            <span className="font-mono" data-testid="text-est-liq">
-              $0
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Order Val:</span>
-            <span className="font-mono" data-testid="text-order-value">
-              $0.00
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Margin Req:</span>
-            <span className="font-mono" data-testid="text-margin-req">
-              $0.00
-            </span>
-          </div>
+      <div className="px-3 py-2">
+        <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+          <span>Amount ({symbol.split("-")[0]})</span>
+          <span>{percent}%</span>
+        </div>
+        <Slider
+          value={[percent]}
+          onValueChange={handleSliderChange}
+          min={0}
+          max={100}
+          step={1}
+        />
+        <div className="flex justify-between text-[11px] mt-1 text-muted-foreground">
+          {[25, 33, 50, 66, 75, 100].map((v) => (
+            <button
+              key={v}
+              onClick={() => handleSliderChange([v])}
+              className="hover:text-foreground transition"
+            >
+              {v}%
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-3 py-2 flex justify-between text-xs">
+        <div className="flex gap-3">
+          <label className="flex items-center gap-1">
+            <input type="checkbox" className="accent-primary" /> Reduce
+          </label>
+          <label className="flex items-center gap-1">
+            <input type="checkbox" className="accent-primary" /> TP/SL
+          </label>
+        </div>
+      </div>
+
+      <div className="p-3 bg-muted/10 text-center text-xs border-t border-border">
+        <p className="text-muted-foreground mb-2">
+          You need funds to start trading. Deposit now to get started.
+        </p>
+        <Button className="bg-[#ff6940] hover:bg-[#ff6940] w-full rounded-md">
+          Deposit
+        </Button>
+      </div>
+
+      <div className="p-3 border-t border-border text-xs space-y-1">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Est Liq:</span>
+          <span className="font-mono">$0</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Order Val:</span>
+          <span className="font-mono">$0.00</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Margin Req:</span>
+          <span className="font-mono">$0.00</span>
         </div>
       </div>
 
       <div className="p-3 border-t border-border">
         <Button
-          className={`w-full ${
-            side === "long"
-              ? "bg-success hover:bg-success/90"
-              : "bg-danger hover:bg-danger/90"
-          }`}
           onClick={handlePlaceOrder}
-          data-testid="button-place-order"
+          className={cn(
+            "w-full rounded-md text-white",
+            side === "long"
+              ? "bg-[#29ab87] hover:bg-[#29ab87]"
+              : "bg-[#ff5252] hover:bg-[#ff5252]"
+          )}
         >
           {side === "long" ? "Long" : "Short"} {symbol.split("-")[0]}
         </Button>

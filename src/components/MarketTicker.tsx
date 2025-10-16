@@ -71,7 +71,7 @@ export default function MarketTicker({
       <div className="h-[56px] border-b border-border bg-card flex items-center px-4 gap-6 overflow-x-auto">
         <Select value={pair} onValueChange={onPairChange}>
           <SelectTrigger
-            className="w-[180px] border-none focus:ring-0 gap-2"
+            className="min-w-[140px] w-[140px] border-none focus:ring-0 gap-2"
             data-testid="select-trading-pair"
           >
             <SelectValue />
@@ -84,33 +84,32 @@ export default function MarketTicker({
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-6 text-sm text-[13px]">
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Mark</div>
+            <div className="text-muted-foreground mb-1">Mark</div>
+            <div className="font-mono font-semibold ">
+              {nf0.format(markPrice)}
+            </div>
+          </div>
+
+          <div>
+            <div className="min-w-[30px] text-muted-foreground mb-1">
+              Oracle
+            </div>
             <div className="font-mono font-semibold text-[13px]">
               {nf0.format(markPrice)}
             </div>
           </div>
 
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Oracle</div>
-            <div className="font-mono font-semibold text-[13px]">
-              {nf0.format(markPrice)}
+            <div className="min-w-[80px] text-muted-foreground mb-1">
+              24h Change
             </div>
-          </div>
-
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">24h Change</div>
             <div
-              className={`flex items-center gap-1 font-mono ${
+              className={`min-w-[145px] flex items-center gap-1 font-mono ${
                 isPositive ? "text-success" : "text-danger"
               }`}
             >
-              {isPositive ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
               {change24h > 0 ? "+" : ""}
               {nf2.format(change24h)} / {isPositive ? "+" : ""}
               {nf2.format(change24hPercent)}%
@@ -118,19 +117,21 @@ export default function MarketTicker({
           </div>
 
           <div>
-            <div className="text-xs text-muted-foreground mb-1">24h Vol</div>
+            <div className="min-w-[30px] text-muted-foreground mb-1">
+              24h Vol
+            </div>
             <div className="font-mono">${nf2.format(volume24h / 1e9)}B</div>
           </div>
 
           <div>
-            <div className="text-xs text-muted-foreground mb-1">
+            <div className="min-w-[90px] text-muted-foreground mb-1">
               Open Interest
             </div>
             <div className="font-mono">${nf2.format(openInterest / 1e9)}B</div>
           </div>
 
           <div>
-            <div className="text-xs text-muted-foreground mb-1">
+            <div className="min-w-[140px] text-muted-foreground mb-1">
               Funding / Countdown
             </div>
             <div className="font-mono">

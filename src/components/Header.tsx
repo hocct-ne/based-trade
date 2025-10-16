@@ -7,6 +7,7 @@ import { ChevronDown, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { LanguageSwitcher } from "./LanguageSwicher";
 
 interface HeaderProps {
   onConnectWallet: () => void;
@@ -29,7 +30,7 @@ export default function Header({
     <header className="h-[60px] border-b border-border bg-card flex items-center justify-between px-4 gap-6">
       <div className="flex items-center gap-6">
         <Image
-          src="/based-logo-white.avif"
+          src="/logoNEWhite.ecbc8381.png"
           width={100}
           height={20}
           alt="Based logo"
@@ -51,7 +52,6 @@ export default function Header({
           ))}
           <NavigationMenu.Root className="relative z-50 flex justify-center">
             <NavigationMenu.List className="flex space-x-6 ">
-              {/* Ecosystem */}
               <NavigationMenu.Item>
                 <NavigationMenu.Trigger className=" hover:text-primary transition flex items-center gap-1 text-muted-foreground ">
                   Ecosystem <ChevronDown className="w-4 h-4" />
@@ -86,7 +86,6 @@ export default function Header({
                 </NavigationMenu.Content>
               </NavigationMenu.Item>
 
-              {/* Trading */}
               <NavigationMenu.Item>
                 <NavigationMenu.Trigger className="hover:text-primary transition flex items-center gap-1 text-muted-foreground ">
                   Trading <ChevronDown className="w-4 h-4" />
@@ -129,7 +128,6 @@ export default function Header({
                 </NavigationMenu.Content>
               </NavigationMenu.Item>
 
-              {/* Portfolio */}
               <NavigationMenu.Item>
                 <NavigationMenu.Trigger className=" hover:text-primary transition flex items-center gap-1 text-muted-foreground ">
                   Portfolio <ChevronDown className="w-4 h-4" />
@@ -169,7 +167,6 @@ export default function Header({
           data-testid="button-connect-wallet"
           className="py-0 px-2 h-2 min-h-6 bg-[#ff6940]"
         >
-          {/* <Wallet className="h-2 w-4" /> */}
           {isWalletConnected ? (
             <span className="font-mono text-sm">
               {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
@@ -178,15 +175,15 @@ export default function Header({
             <span className="text-[#000000]">Connect</span>
           )}
         </Button>
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           onClick={onOpenSettings}
           data-testid="button-language"
           className="h-9 w-12"
         >
-          {/* <LanguageSwitcher /> */}
-        </Button>
+          <LanguageSwitcher />
+        </Button> */}
 
         <Button
           variant="ghost"

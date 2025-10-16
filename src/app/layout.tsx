@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/theme/theme-provider";
 
 export const metadata: Metadata = {
-  title: "Based Trade",
+  title: "C98 Trade",
 };
 
 export default async function RootLayout({

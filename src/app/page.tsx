@@ -53,7 +53,7 @@ export default function TradingPage() {
   const basePrice = 114915;
 
   return (
-    <div className="flex flex-col bg-background">
+    <div className="w-full h-full flex flex-col bg-background">
       <Header
         onConnectWallet={handleConnectWallet}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -61,8 +61,8 @@ export default function TradingPage() {
         walletAddress={walletAddress}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 flex flex-col min-w-0">
+      <div className="grid grid-cols-[1fr_300px_330px] grid-rows-[600px_350px] overflow-hidden flex-1">
+        <div className="col-start-1 row-start-1 flex flex-col min-w-0 border-r border-border">
           <div className="flex-col min-h-220 ">
             <div>
               <MarketTicker
@@ -77,42 +77,36 @@ export default function TradingPage() {
                 onPairChange={setSelectedPair}
               />
             </div>
-            <TradingChart symbol={selectedPair} />
-          </div>
-
-          <div className="flex-1 min-h-[240px] border-t border-border overflow-auto">
-            <BottomTabs />
+            {/* <TradingChart symbol={selectedPair} /> */}
           </div>
         </div>
-        <div className="w-[300px] hidden lg:block">
-          <OrderBook
-            bids={generateMockOrders(basePrice, 20, true)}
-            asks={generateMockOrders(basePrice + 10, 20, false)}
-            spread={10}
-            spreadPercent={0.01}
+
+        <div className="col-start-2 row-start-1 border-r border-border overflow-auto">
+          <OrderBook />
+        </div>
+
+        <div className="col-start-3 row-start-1 overflow-auto">
+          <TradeForm
+            symbol={selectedPair}
+            availableFunds={walletConnected ? 10000 : 0}
+            currentPosition={0}
+            markPrice={markPrice}
           />
         </div>
 
-        <div className="w-[320px] hidden lg:flex flex-col">
-          <div className="flex-1 overflow-auto">
-            <TradeForm
-              symbol={selectedPair}
-              availableFunds={walletConnected ? 10000 : 0}
-              currentPosition={0}
-              markPrice={markPrice}
-            />
-          </div>
+        <div className="col-span-2 row-start-2 border-t border-border overflow-auto">
+          <BottomTabs />
+        </div>
 
-          <div className="border-t border-border">
-            <AccountPanel
-              accountEquity={walletConnected ? 10000 : 0}
-              spotBalance={0}
-              perpsBalance={walletConnected ? 10000 : 0}
-              unrealizedPnl={0}
-              marginRatio={0}
-              accountLeverage={0}
-            />
-          </div>
+        <div className="col-start-3 row-start-2 border-t border-border overflow-auto">
+          <AccountPanel
+            accountEquity={walletConnected ? 10000 : 0}
+            spotBalance={0}
+            perpsBalance={walletConnected ? 10000 : 0}
+            unrealizedPnl={0}
+            marginRatio={0}
+            accountLeverage={0}
+          />
         </div>
       </div>
 

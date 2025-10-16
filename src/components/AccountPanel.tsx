@@ -20,7 +20,7 @@ export default function AccountPanel({
   accountLeverage,
 }: AccountPanelProps) {
   return (
-    <div className="bg-card p-4 space-y-4">
+    <div className="bg-card p-4 space-y-4 overflow-auto w-full h-full">
       <div>
         <div className="text-sm text-muted-foreground mb-1">Account Equity</div>
         <div
