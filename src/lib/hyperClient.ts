@@ -7,7 +7,8 @@ let hyperClient: Hyperliquid | null = null;
 function getHyperClient() {
   if (!hyperClient) {
     hyperClient = new Hyperliquid({
-      testnet: false,
+      enableWs: true,
+      testnet: true,
     });
   }
   return hyperClient;

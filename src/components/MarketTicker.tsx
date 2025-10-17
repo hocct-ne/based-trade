@@ -142,7 +142,7 @@ export default function MarketTicker({
                 }`}
               >
                 {nf2.format(fundingRate * 100)}%
-              </span>{" "}
+              </span>
               / {fundingCountdown}
             </div>
           </div>

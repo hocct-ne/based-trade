@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -12,72 +12,103 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTradeStore } from "@/store/useTradeStore";
+import { usePlaceOrder } from "@/hooks/usePlaceOrder";
+import { Checkbox } from "./ui/checkbox";
+import { Label } from "./ui/label";
+import { MarginModeSelector } from "./MarginModeSelector";
+import { LeverageSelector } from "./LeverageSelector";
 
 interface TradeFormProps {
   symbol: string;
-  availableFunds: number;
-  currentPosition: number;
-  markPrice: number;
 }
 
-export default function TradeForm({
-  symbol,
-  availableFunds,
-  currentPosition,
-  markPrice,
-}: TradeFormProps) {
+export default function TradeForm({ symbol }: TradeFormProps) {
+  //   const sdk = getHyperClient();
+  // const balances = await sdk.info.getBalances(userAddress);
+  // const positions = await sdk.info.getUserOpenOrders(userAddress);
+
+  const { availableFunds, currentPosition, markPrice } = useTradeStore();
+  const { placeOrder, isPlacing } = usePlaceOrder();
+
   const [marginMode, setMarginMode] = useState<"cross" | "isolated">("cross");
   const [leverage, setLeverage] = useState(20);
   const [orderType, setOrderType] = useState<"limit" | "market">("limit");
   const [side, setSide] = useState<"long" | "short">("long");
-  const [price, setPrice] = useState(markPrice.toFixed(2));
+  const [price, setPrice] = useState<number>(markPrice);
   const [percent, setPercent] = useState(0);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState<number>(0);
+  const [isManualPriceInput, setIsManualPriceInput] = useState(false);
+
+  const orderValue = (price ?? markPrice) * (amount ?? 0);
+  const marginReq = orderValue / leverage;
+  const liqPrice = price && leverage > 0 ? price * (1 - 1 / leverage) : 0;
+
+  useEffect(() => {
+    if (!isManualPriceInput && orderType === "limit") {
+      setPrice(markPrice);
+    }
+  }, [markPrice, orderType, isManualPriceInput]);
 
   const handleSliderChange = (value: number[]) => {
-    setPercent(value[0]);
-    const usdValue = (availableFunds * value[0]) / 100;
-    const qty = usdValue / Number(price || markPrice);
-    setAmount(qty.toFixed(5));
-  };
+    const pct = value[0];
+    setPercent(pct);
 
-  const handlePlaceOrder = () => {
-    console.log("🚀 Placing order:", {
+    const currentPrice = price || markPrice;
+    if (!currentPrice || currentPrice <= 0 || !availableFunds) {
+      setAmount(0);
+      return;
+    }
+
+    const usdValue = (availableFunds * pct) / 100;
+
+    let qty = usdValue / currentPrice;
+
+    const lotSize = 0.0001;
+    qty = Math.floor(qty / lotSize) * lotSize;
+
+    setAmount(qty);
+  };
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsManualPriceInput(true);
+    setPrice(Number(e.target.value));
+  };
+  const handleSubmit = async () => {
+    console.log("Placing order:", {
       symbol,
-      marginMode,
-      leverage,
-      orderType,
       side,
+      orderType,
       price,
       amount,
-      percent,
+      leverage,
+    });
+
+    await placeOrder({
+      symbol: "BTC-PERP",
+      side,
+      orderType,
+      price,
+      size: amount,
+      leverage,
     });
   };
 
   return (
     <div className="bg-background border border-border overflow-hidden flex flex-col">
-      <div className="flex justify-between items-center p-2 border-b border-border text-sm">
+      <div className="flex gap-2 justify-between items-center p-2 border-b border-border text-sm">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn("text-[13px] rounded-md px-3 py-1")}
-            onClick={() => setMarginMode("cross")}
-          >
-            Cross
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn("text-[13px] rounded-md px-3 py-1")}
-            onClick={() => setMarginMode("cross")}
-          >
-            {leverage}x
-          </Button>
+          <MarginModeSelector
+            value={marginMode}
+            onChange={(val) => setMarginMode(val)}
+          />
+          <LeverageSelector
+            value={leverage}
+            onChange={(val) => setLeverage(val)}
+          />
         </div>
 
         <Select value={orderType} onValueChange={(v) => setOrderType(v as any)}>
-          <SelectTrigger className="flex-1 h-7 text-xs border-border">
+          <SelectTrigger className="flex-1 text-xs border-border">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
@@ -125,22 +156,52 @@ export default function TradeForm({
       </div>
 
       {orderType === "limit" && (
-        <div className="px-3 py-2">
-          <label className="text-xs text-muted-foreground block mb-1">
+        <div className="px-3 py-2 space-y-1.5">
+          <label
+            htmlFor="price"
+            className="text-xs text-muted-foreground block"
+          >
             Price (USDC)
           </label>
-          <Input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="font-mono text-right"
-          />
+
+          <div className="flex items-center h-full gap-2">
+            <Input
+              id="price"
+              type="number"
+              inputMode="decimal"
+              value={typeof price === "number" && !isNaN(price) ? price : ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPrice(val === "" ? 0 : Number(val));
+              }}
+              placeholder={
+                typeof markPrice === "number" && !isNaN(markPrice)
+                  ? markPrice.toFixed(2)
+                  : "0"
+              }
+              className={cn(
+                "font-mono text-right text-sm bg-muted/40 border border-border/50 flex-1 focus-visible:ring-0 focus-visible:border-primary",
+                "[appearance:textfield]",
+                "[&::-webkit-outer-spin-button]:appearance-none",
+                "[&::-webkit-inner-spin-button]:appearance-none"
+              )}
+            />
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setPrice(Number(markPrice?.toFixed(2)))}
+              className="h-9 text-[11px] font-semibold bg-muted/40 border border-border/50 text-primary hover:bg-muted"
+            >
+              Mark
+            </Button>
+          </div>
         </div>
       )}
 
       <div className="px-3 py-2">
         <div className="flex justify-between mb-1 text-xs text-muted-foreground">
-          <span>Amount ({symbol.split("-")[0]})</span>
+          <span>Amount</span>
           <span>{percent}%</span>
         </div>
         <Slider
@@ -164,43 +225,58 @@ export default function TradeForm({
       </div>
 
       <div className="px-3 py-2 flex justify-between text-xs">
-        <div className="flex gap-3">
-          <label className="flex items-center gap-1">
-            <input type="checkbox" className="accent-primary" /> Reduce
-          </label>
-          <label className="flex items-center gap-1">
-            <input type="checkbox" className="accent-primary" /> TP/SL
-          </label>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-2">
+            <Checkbox id="reduce" />
+            <Label htmlFor="reduce" className="text-xs text-muted-foreground">
+              Reduce
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox id="tpsl" />
+            <Label htmlFor="tpsl" className="text-xs text-muted-foreground">
+              TP/SL
+            </Label>
+          </div>
         </div>
       </div>
 
-      <div className="p-3 bg-muted/10 text-center text-xs border-t border-border">
+      {/* <div className="p-3 bg-muted/10 text-center text-xs border-t border-border">
         <p className="text-muted-foreground mb-2">
           You need funds to start trading. Deposit now to get started.
         </p>
         <Button className="bg-[#ff6940] hover:bg-[#ff6940] w-full rounded-md">
           Deposit
         </Button>
-      </div>
+      </div> */}
 
       <div className="p-3 border-t border-border text-xs space-y-1">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Est Liq:</span>
-          <span className="font-mono">$0</span>
+          <span className="font-mono">
+            {liqPrice ? `$${liqPrice.toFixed(2)}` : "-"}
+          </span>
         </div>
+
         <div className="flex justify-between">
           <span className="text-muted-foreground">Order Val:</span>
-          <span className="font-mono">$0.00</span>
+          <span className="font-mono">
+            {orderValue ? `$${orderValue.toFixed(2)}` : "-"}
+          </span>
         </div>
+
         <div className="flex justify-between">
           <span className="text-muted-foreground">Margin Req:</span>
-          <span className="font-mono">$0.00</span>
+          <span className="font-mono">
+            {marginReq ? `$${marginReq.toFixed(2)}` : "-"}
+          </span>
         </div>
       </div>
 
       <div className="p-3 border-t border-border">
         <Button
-          onClick={handlePlaceOrder}
+          disabled={isPlacing || percent === 0}
+          onClick={handleSubmit}
           className={cn(
             "w-full rounded-md text-white",
             side === "long"

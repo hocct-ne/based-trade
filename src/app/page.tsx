@@ -11,20 +11,6 @@ import SettingsModal from "@/components/SettingsModal";
 import WalletConnectModal from "@/components/WalletConnectModal";
 import { Hyperliquid } from "@coin98-hyper/core";
 
-// Mock data generators
-const generateMockOrders = (
-  basePrice: number,
-  count: number,
-  isBid: boolean
-) => {
-  return Array.from({ length: count }, (_, i) => {
-    const price = isBid ? basePrice - i * 10 : basePrice + i * 10;
-    const amount = Math.random() * 5;
-    const total = amount * (i + 1);
-    return { price, amount, total };
-  });
-};
-
 const sdk = Hyperliquid.createInstane({});
 
 export default function TradingPage() {
@@ -50,7 +36,6 @@ export default function TradingPage() {
 
   // Mock market data
   const markPrice = 114915;
-  const basePrice = 114915;
 
   return (
     <div className="w-full h-full flex flex-col bg-background">
@@ -61,7 +46,7 @@ export default function TradingPage() {
         walletAddress={walletAddress}
       />
 
-      <div className="grid grid-cols-[1fr_300px_330px] grid-rows-[600px_350px] overflow-hidden flex-1">
+      <div className="grid grid-cols-[1fr_350px_400px] grid-rows-[600px_350px] overflow-hidden flex-1">
         <div className="col-start-1 row-start-1 flex flex-col min-w-0 border-r border-border">
           <div className="flex-col min-h-220 ">
             <div>
@@ -86,12 +71,7 @@ export default function TradingPage() {
         </div>
 
         <div className="col-start-3 row-start-1 overflow-auto">
-          <TradeForm
-            symbol={selectedPair}
-            availableFunds={walletConnected ? 10000 : 0}
-            currentPosition={0}
-            markPrice={markPrice}
-          />
+          <TradeForm symbol={selectedPair} />
         </div>
 
         <div className="col-span-2 row-start-2 border-t border-border overflow-auto">
