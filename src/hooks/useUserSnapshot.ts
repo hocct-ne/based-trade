@@ -15,6 +15,7 @@ export function useUserSnapshot() {
         const clearing = await client.info.perpetuals.getClearinghouseState(
           nextConfig.nextWalletAddress
         );
+        
 
         updateFromFeed({
           clearinghouseState: clearing,

@@ -7,6 +7,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useHyperConnected } from "./useHyperConnected";
 import { usePositions } from "./usePositions";
 import { useUserState } from "@/store/useUserState";
+import { parsePlaceOrderResponse } from "@coin98-hyper/core";
+
+export enum TypeTrade {
+  SPOT = "SPOT",
+  PERP = "PERP",
+}
+
+export const DEFAULT_SLIPPAGE = 0.05; // Slippage 5%
+export const DEFAULT_MIN_ORDER = 10;
 
 interface PlaceOrderParams {
   symbol: string;
@@ -14,6 +23,7 @@ interface PlaceOrderParams {
   orderType?: "limit" | "market";
   price?: number;
   size: number;
+  reduceOnly?: boolean;
   leverage?: number;
 }
 
@@ -37,7 +47,9 @@ export function usePlaceOrder() {
   const { isConnected } = useHyperConnected();
   const [isPlacing, setIsPlacing] = useState(false);
   const [lastOrder, setLastOrder] = useState<any>(null);
-  const setAvailableFunds = useUserState((s) => s.setAvailableFunds);
+  const setAvailableFundsVsPositions = useUserState(
+    (s) => s.setAvailableFundsVsPositions
+  );
 
   const placeOrder = useCallback(
     async ({
@@ -46,6 +58,7 @@ export function usePlaceOrder() {
       orderType = "market",
       price,
       size,
+      reduceOnly = false,
       leverage = 20,
     }: PlaceOrderParams) => {
       if (!isConnected) {
@@ -67,15 +80,33 @@ export function usePlaceOrder() {
         const data = await client.exchange.approveAgent(action, sigMess);
         // console.log("data", data);
 
+        const isBuy = side === "long";
+        const convertedSymbol = await client.symbolConversion.convertSymbol(
+          symbol,
+          undefined,
+          TypeTrade.PERP
+        );
+
+        const slippagePrice = await client.getSlippagePrice(
+          convertedSymbol,
+          isBuy,
+          DEFAULT_SLIPPAGE,
+          price
+        );
+
+        const convertSize = await client.convertSizePerp(convertedSymbol, size);
+
         const order = await client.exchange.placeOrder({
           agentPrivateKey: w.privateKey,
-          reduce_only: false,
+          reduce_only: reduceOnly,
           coin: symbol,
           is_buy: side === "long",
-          limit_px: price as number, //orderType === "limit" ? Number(price) : "",
-          sz: size,
+          limit_px: slippagePrice,
+          sz: convertSize,
           order_type: { limit: { tif: "FrontendMarket" } },
         });
+
+        const formatResult = parsePlaceOrderResponse(order);
 
         const addr = nextConfig.nextWalletAddress;
         if (addr) {
@@ -83,15 +114,23 @@ export function usePlaceOrder() {
             addr
           );
 
-          const available = clearing?.marginSummary?.accountValue ?? 0;
-          setAvailableFunds(Number(available));
+          const available = clearing?.withdrawable ?? 0;
+          const positions = clearing?.assetPositions ?? [];
+
+          setAvailableFundsVsPositions({
+            available: Number(available),
+            positions,
+          });
+
           console.log("💰 Updated available funds:", available);
         }
 
-        console.log("✅ Order placed:", order);
-        setLastOrder(order);
+        console.log("✅ Order placed:", order, formatResult);
+        setLastOrder(formatResult);
 
-        return order;
+        if (formatResult.success) return formatResult;
+
+        throw new Error(formatResult.message);
       } catch (err: any) {
         console.error("❌ Failed to place order:", err);
         throw err;

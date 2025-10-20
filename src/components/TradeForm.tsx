@@ -39,7 +39,9 @@ export default function TradeForm({ symbol }: TradeFormProps) {
 
   const currentPos = getPositionSize(symbol.split("-")[0]);
 
-  const [marginMode, setMarginMode] = useState<"cross" | "isolated">("cross");
+  const [marginMode, setMarginMode] = useState<"cross" | "isolated">(
+    "isolated"
+  );
   const [leverage, setLeverage] = useState(20);
   const [orderType, setOrderType] = useState<"limit" | "market">("limit");
   const [side, setSide] = useState<"long" | "short">("long");
@@ -50,6 +52,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
   const [tokenValueInput, setTokenValueInput] = useState<string>("");
   const [usdcValueInput, setUsdcValueInput] = useState<string>("");
   const [isManualPriceInput, setIsManualPriceInput] = useState(false);
+  const [isReduceOnly, setIsReduceOnly] = useState(false);
 
   const orderValue = (price ?? markPrice) * (amount ?? 0);
   const marginReq = orderValue / leverage;
@@ -93,6 +96,12 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       setPriceInput(markPrice.toFixed(2));
     }
   }, [markPrice, orderType, isManualPriceInput]);
+
+  useEffect(() => {
+    setPercent(0);
+    setUsdcValueInput("");
+    setTokenValueInput("");
+  }, [symbol]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -217,7 +226,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     console.log("Placing order:", {
       symbol: `${symbol.split("-")[0]}-PERP`,
       side,
-      orderType,
+      // orderType,
       price,
       amount,
       leverage,
@@ -226,13 +235,17 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     await placeOrder({
       symbol: `${symbol.split("-")[0]}-PERP`,
       side,
-      orderType,
+      // orderType,
       price,
       size: amount,
+      reduceOnly: isReduceOnly,
       leverage,
     });
   };
 
+  const handleReduceChange = (checked: boolean) => {
+    setIsReduceOnly(checked);
+  };
   return (
     <div className="bg-background border border-border overflow-hidden flex flex-col">
       <div className="flex gap-2 justify-between items-center p-2 border-b border-border text-sm">
@@ -406,7 +419,11 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       <div className="px-3 py-2 flex justify-between text-xs">
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
-            <Checkbox id="reduce" />
+            <Checkbox
+              id="reduce"
+              checked={isReduceOnly}
+              onCheckedChange={handleReduceChange}
+            />
             <Label htmlFor="reduce" className="text-xs text-muted-foreground">
               Reduce
             </Label>

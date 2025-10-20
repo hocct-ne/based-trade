@@ -6,7 +6,14 @@ interface UserState {
   positions: any[];
   balances: any[];
   updateFromFeed: (data: any) => void;
-  setAvailableFunds: (v: number) => void;
+  setAvailableFundsVsPositions: ({
+    available,
+    positions,
+  }: {
+    available: number;
+    positions: any;
+  }) => void;
+
   getPositionSize: (symbol: string) => number;
 }
 
@@ -25,7 +32,9 @@ export const useUserState = create<UserState>((set, get) => ({
       balances: spot.balances ?? [],
     });
   },
-  setAvailableFunds: (v) => set({ availableFunds: v }),
+  setAvailableFundsVsPositions: ({ available, positions }) =>
+    set({ availableFunds: available, positions }),
+
   getPositionSize: (symbol: string) => {
     const positions = get().positions;
     const pos = positions.find(

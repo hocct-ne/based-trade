@@ -15,7 +15,7 @@ export function useUserFeed() {
     if (!addr || !isConnected) return;
 
     client.subscriptions.subscribeToWebData2(addr, (data) => {
-      console.log("data", data);
+      // console.log("data", data);
 
       if (!data?.clearinghouseState && !data?.spotState) return;
 
