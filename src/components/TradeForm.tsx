@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -12,43 +9,162 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTradeStore } from "@/store/useTradeStore";
+import { Slider } from "@/components/ui/slider";
+import { useMarkPrice } from "@/hooks/useMarkPrice";
 import { usePlaceOrder } from "@/hooks/usePlaceOrder";
+import { useUserFeed } from "@/hooks/useUserFeed";
+import { useUserSnapshot } from "@/hooks/useUserSnapshot";
+import { getMarkPrice } from "@/lib/getMarkPrice";
+import { cn } from "@/lib/utils";
+import { useUserState } from "@/store/useUserState";
+import { useEffect, useState } from "react";
+import { LeverageSelector } from "./LeverageSelector";
+import { MarginModeSelector } from "./MarginModeSelector";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
-import { MarginModeSelector } from "./MarginModeSelector";
-import { LeverageSelector } from "./LeverageSelector";
 
 interface TradeFormProps {
   symbol: string;
 }
 
 export default function TradeForm({ symbol }: TradeFormProps) {
-  //   const sdk = getHyperClient();
-  // const balances = await sdk.info.getBalances(userAddress);
-  // const positions = await sdk.info.getUserOpenOrders(userAddress);
-
-  const { availableFunds, currentPosition, markPrice } = useTradeStore();
+  useUserSnapshot();
+  useUserFeed();
   const { placeOrder, isPlacing } = usePlaceOrder();
+  const markPrice = useMarkPrice(symbol.split("-")[0]);
+
+  const availableFunds = useUserState((s) => s.availableFunds);
+
+  const getPositionSize = useUserState((s) => s.getPositionSize);
+
+  const currentPos = getPositionSize(symbol.split("-")[0]);
 
   const [marginMode, setMarginMode] = useState<"cross" | "isolated">("cross");
   const [leverage, setLeverage] = useState(20);
   const [orderType, setOrderType] = useState<"limit" | "market">("limit");
   const [side, setSide] = useState<"long" | "short">("long");
   const [price, setPrice] = useState<number>(markPrice);
+  const [priceInput, setPriceInput] = useState<string>(markPrice.toFixed(2));
   const [percent, setPercent] = useState(0);
   const [amount, setAmount] = useState<number>(0);
+  const [tokenValueInput, setTokenValueInput] = useState<string>("");
+  const [usdcValueInput, setUsdcValueInput] = useState<string>("");
   const [isManualPriceInput, setIsManualPriceInput] = useState(false);
 
   const orderValue = (price ?? markPrice) * (amount ?? 0);
   const marginReq = orderValue / leverage;
-  const liqPrice = price && leverage > 0 ? price * (1 - 1 / leverage) : 0;
+  const liqPrice = (() => {
+    if (!price || leverage <= 0 || amount <= 0) return 0;
+
+    // Tỷ lệ Maintenance Margin Rate (MMR) - GIẢ ĐỊNH 0.5% - CẦN CÓ GIÁ TRỊ THỰC TẾ CỦA SÀN
+    const MMR = 0.005;
+    const initialMargin = orderValue / leverage;
+
+    if (marginMode === "isolated") {
+      const factor = 1 / leverage; // (1 / Leverage) = % thua lỗ tối đa trước khi thanh lý
+
+      if (side === "long") {
+        return price * (1 - factor); // Long: Giá vào * (1 - 1/Đòn bẩy)
+      } else {
+        return price * (1 + factor); // Short: Giá vào * (1 + 1/Đòn bẩy)
+      }
+    } else {
+      // marginMode === "cross"
+      const maintenanceMargin = orderValue * MMR;
+
+      // Quỹ Dự trữ Margin = Available Funds (Toàn bộ số dư) + Initial Margin (Ký quỹ ban đầu) - Maintenance Margin
+      const marginReserve = availableFunds + initialMargin - maintenanceMargin;
+
+      if (side === "long") {
+        // Long: Giá Thanh lý = Giá vào - (Quỹ Dự trữ Margin / Kích thước lệnh)
+        const diffPrice = marginReserve / amount;
+        return price - diffPrice;
+      } else {
+        // Short: Giá Thanh lý = Giá vào + (Quỹ Dự trữ Margin / Kích thước lệnh)
+        const diffPrice = marginReserve / amount;
+        return price + diffPrice;
+      }
+    }
+  })();
 
   useEffect(() => {
     if (!isManualPriceInput && orderType === "limit") {
       setPrice(markPrice);
+      setPriceInput(markPrice.toFixed(2));
     }
   }, [markPrice, orderType, isManualPriceInput]);
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+
+    if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+      setTokenValueInput(inputValue);
+
+      const val = Number(inputValue);
+
+      if (isNaN(val) || val < 0) {
+        setAmount(0);
+        setUsdcValueInput("");
+        return;
+      }
+
+      setAmount(val);
+
+      const currentPrice = price || markPrice;
+      if (currentPrice > 0 && availableFunds > 0) {
+        const usdValue = val * currentPrice;
+
+        setUsdcValueInput(usdValue.toFixed(2));
+
+        const maxTradeValue = availableFunds * leverage;
+        const newPercent = (usdValue / maxTradeValue) * 100;
+
+        setPercent(Math.min(newPercent, 100));
+      } else {
+        setPercent(0);
+        setUsdcValueInput("");
+      }
+    }
+  };
+
+  const handleUSDCValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+
+    if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+      setUsdcValueInput(inputValue);
+
+      const usdValue = Number(inputValue);
+
+      if (isNaN(usdValue) || usdValue < 0) {
+        setAmount(0);
+        setTokenValueInput("");
+        return;
+      }
+
+      const currentPrice = price || markPrice;
+      if (currentPrice > 0) {
+        let qty = usdValue / currentPrice;
+        const lotSize = 0.0001;
+        qty = Math.floor(qty / lotSize) * lotSize;
+
+        setAmount(qty);
+        setTokenValueInput(qty.toFixed(5));
+
+        if (availableFunds > 0) {
+          const maxTradeValue = availableFunds * leverage;
+          const newPercent = (usdValue / maxTradeValue) * 100;
+
+          setPercent(Math.min(newPercent, 100));
+        } else {
+          setPercent(0);
+        }
+      } else {
+        setAmount(0);
+        setPercent(0);
+        setTokenValueInput("");
+      }
+    }
+  };
 
   const handleSliderChange = (value: number[]) => {
     const pct = value[0];
@@ -57,10 +173,13 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     const currentPrice = price || markPrice;
     if (!currentPrice || currentPrice <= 0 || !availableFunds) {
       setAmount(0);
+      setTokenValueInput("");
+      setUsdcValueInput("");
       return;
     }
 
-    const usdValue = (availableFunds * pct) / 100;
+    const maxTradeValue = availableFunds * leverage;
+    const usdValue = (maxTradeValue * pct) / 100;
 
     let qty = usdValue / currentPrice;
 
@@ -68,14 +187,35 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     qty = Math.floor(qty / lotSize) * lotSize;
 
     setAmount(qty);
+    setTokenValueInput(qty.toFixed(5));
+
+    const actualOrderValue = qty * currentPrice;
+    setUsdcValueInput(actualOrderValue.toFixed(2));
   };
+
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsManualPriceInput(true);
-    setPrice(Number(e.target.value));
+    const inputValue = e.target.value;
+
+    if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+      setPriceInput(inputValue);
+
+      const val = Number(inputValue);
+      setPrice(val);
+    }
   };
+
+  const handleMarkButtonClick = async () => {
+    const price = await getMarkPrice(symbol.split("-")[0]);
+    if (price) {
+      setPrice(Number(price?.toFixed(2)));
+      setPriceInput(price?.toFixed(2) || "0");
+    }
+  };
+
   const handleSubmit = async () => {
     console.log("Placing order:", {
-      symbol,
+      symbol: `${symbol.split("-")[0]}-PERP`,
       side,
       orderType,
       price,
@@ -84,7 +224,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     });
 
     await placeOrder({
-      symbol: "BTC-PERP",
+      symbol: `${symbol.split("-")[0]}-PERP`,
       side,
       orderType,
       price,
@@ -150,7 +290,10 @@ export default function TradeForm({ symbol }: TradeFormProps) {
         <div className="flex justify-between">
           <span className="text-muted-foreground">Current Position</span>
           <span className="font-mono">
-            {currentPosition.toFixed(5)} {symbol.split("-")[0]}
+            <span className="font-mono">
+              {currentPos.toFixed(5)}{" "}
+              {symbol.replace("-PERP", "").replace("-USD", "")}
+            </span>
           </span>
         </div>
       </div>
@@ -167,13 +310,11 @@ export default function TradeForm({ symbol }: TradeFormProps) {
           <div className="flex items-center h-full gap-2">
             <Input
               id="price"
-              type="number"
+              type="text"
               inputMode="decimal"
-              value={typeof price === "number" && !isNaN(price) ? price : ""}
-              onChange={(e) => {
-                const val = e.target.value;
-                setPrice(val === "" ? 0 : Number(val));
-              }}
+              value={priceInput}
+              lang="en"
+              onChange={handlePriceChange}
               placeholder={
                 typeof markPrice === "number" && !isNaN(markPrice)
                   ? markPrice.toFixed(2)
@@ -190,7 +331,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setPrice(Number(markPrice?.toFixed(2)))}
+              onClick={handleMarkButtonClick}
               className="h-9 text-[11px] font-semibold bg-muted/40 border border-border/50 text-primary hover:bg-muted"
             >
               Mark
@@ -198,6 +339,44 @@ export default function TradeForm({ symbol }: TradeFormProps) {
           </div>
         </div>
       )}
+
+      <div className="px-3 py-2 ">
+        <div className="flex items-center border border-border/50 rounded-md bg-muted/40 overflow-hidden">
+          <Input
+            id="amount-btc"
+            type="text"
+            inputMode="decimal"
+            value={tokenValueInput}
+            onChange={handleAmountChange}
+            placeholder="0"
+            className={cn(
+              "font-mono text-left text-sm bg-transparent border-none flex-1 focus-visible:ring-0",
+              "[appearance:textfield]",
+              "[&::-webkit-outer-spin-button]:appearance-none",
+              "[&::-webkit-inner-spin-button]:appearance-none"
+            )}
+          />
+          <span className="text-sm px-2 text-muted-foreground border-r-4 border-border/50">
+            {symbol.split("-")[0]}
+          </span>
+
+          <Input
+            id="amount-usdc"
+            type="text"
+            inputMode="decimal"
+            value={usdcValueInput}
+            onChange={handleUSDCValueChange}
+            placeholder="0"
+            className={cn(
+              "font-mono text-right text-sm bg-transparent border-none flex-1 focus-visible:ring-0",
+              "[appearance:textfield]",
+              "[&::-webkit-outer-spin-button]:appearance-none",
+              "[&::-webkit-inner-spin-button]:appearance-none"
+            )}
+          />
+          <span className="text-sm px-2 text-muted-foreground">USDC</span>
+        </div>
+      </div>
 
       <div className="px-3 py-2">
         <div className="flex justify-between mb-1 text-xs text-muted-foreground">
@@ -254,21 +433,33 @@ export default function TradeForm({ symbol }: TradeFormProps) {
         <div className="flex justify-between">
           <span className="text-muted-foreground">Est Liq:</span>
           <span className="font-mono">
-            {liqPrice ? `$${liqPrice.toFixed(2)}` : "-"}
+            {liqPrice > 0
+              ? `$${liqPrice.toFixed(2)}`
+              : liqPrice === 0
+              ? "$0.00"
+              : "-"}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-muted-foreground">Order Val:</span>
           <span className="font-mono">
-            {orderValue ? `$${orderValue.toFixed(2)}` : "-"}
+            {orderValue > 0
+              ? `$${orderValue.toFixed(2)}`
+              : orderValue === 0
+              ? "$0.00"
+              : "-"}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span className="text-muted-foreground">Margin Req:</span>
           <span className="font-mono">
-            {marginReq ? `$${marginReq.toFixed(2)}` : "-"}
+            {marginReq > 0
+              ? `$${marginReq.toFixed(2)}`
+              : marginReq === 0
+              ? "$0.00"
+              : "-"}
           </span>
         </div>
       </div>

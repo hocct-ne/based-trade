@@ -5,7 +5,7 @@ import MarketTicker from "@/components/MarketTicker";
 import TradingChart from "@/components/TradingChart";
 import OrderBook from "@/components/OrderBook";
 import TradeForm from "@/components/TradeForm";
-import BottomTabs from "@/components/BottomTabs";
+import BottomTabs from "@/components/bottom-tabs/BottomTabs";
 import AccountPanel from "@/components/AccountPanel";
 import SettingsModal from "@/components/SettingsModal";
 import WalletConnectModal from "@/components/WalletConnectModal";

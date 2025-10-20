@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/useToast";
 import { nextConfig } from "@/config";
 import { ReadonlyURLSearchParams } from "next/navigation";
 

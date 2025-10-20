@@ -6,6 +6,7 @@ import { ethers, TypedDataDomain, TypedDataField, Wallet } from "ethers";
 import { useCallback, useEffect, useState } from "react";
 import { useHyperConnected } from "./useHyperConnected";
 import { usePositions } from "./usePositions";
+import { useUserState } from "@/store/useUserState";
 
 interface PlaceOrderParams {
   symbol: string;
@@ -36,7 +37,7 @@ export function usePlaceOrder() {
   const { isConnected } = useHyperConnected();
   const [isPlacing, setIsPlacing] = useState(false);
   const [lastOrder, setLastOrder] = useState<any>(null);
-  const { addPosition } = usePositions();
+  const setAvailableFunds = useUserState((s) => s.setAvailableFunds);
 
   const placeOrder = useCallback(
     async ({
@@ -64,28 +65,32 @@ export function usePlaceOrder() {
 
         const sigMess = await signTypedData(signingData);
         const data = await client.exchange.approveAgent(action, sigMess);
-        console.log("data", data);
+        // console.log("data", data);
 
         const order = await client.exchange.placeOrder({
           agentPrivateKey: w.privateKey,
           reduce_only: false,
-          coin: "BTC-PERP",
+          coin: symbol,
           is_buy: side === "long",
-          limit_px: 118000, //orderType === "limit" ? Number(price) : "",
-          sz: "0.0001",
+          limit_px: price as number, //orderType === "limit" ? Number(price) : "",
+          sz: size,
           order_type: { limit: { tif: "FrontendMarket" } },
         });
 
-        // if (order?.status === "success") {
-        //   const positions = await client.info.getUserPositions(userAddress);
-        //   if (Array.isArray(positions)) {
-        //     const pos = positions.find((p) => p.symbol === symbol);
-        //     if (pos) addPosition(pos);
-        //   }
-        // }
+        const addr = nextConfig.nextWalletAddress;
+        if (addr) {
+          const clearing = await client.info.perpetuals.getClearinghouseState(
+            addr
+          );
+
+          const available = clearing?.marginSummary?.accountValue ?? 0;
+          setAvailableFunds(Number(available));
+          console.log("💰 Updated available funds:", available);
+        }
 
         console.log("✅ Order placed:", order);
         setLastOrder(order);
+
         return order;
       } catch (err: any) {
         console.error("❌ Failed to place order:", err);
@@ -96,33 +101,6 @@ export function usePlaceOrder() {
     },
     [isConnected]
   );
-
-  useEffect(() => {
-    if (!nextConfig.nextWalletAddress || !client.ws.isConnected()) return;
-    // your position
-    client.subscriptions.subscribeToWebData2(
-      nextConfig.nextWalletAddress,
-      (data) => {
-        console.log("data>", data);
-
-        // Đôi lúc subscription trả về data của user khác do đó cần check lại để đảm bảo đúng user
-        // const userAddress = get(data, "user", "").toLowerCase();
-
-        // if (userAddress !== activeEvmRef.current?.toLowerCase()) return;
-        // // -----
-        // // const clearinghouseState = get(data, "clearinghouseState");
-        // const openOrders = get(data, "openOrders", []);
-
-        // throttledUpdateAssetsContext(data);
-      }
-    );
-
-    return () => {
-      client.subscriptions.unsubscribeFromWebData2(
-        nextConfig.nextWalletAddress!
-      );
-    };
-  }, [nextConfig.nextWalletAddress, client.ws.isConnected()]);
 
   return { placeOrder, isPlacing, lastOrder };
 }
