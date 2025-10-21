@@ -21,7 +21,7 @@ export default function TradingPage() {
   useUserSnapshot();
   useUserFeed();
   useMarkPriceWs();
-  useHyperConnected()
+  useHyperConnected();
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>();
   const [settingsOpen, setSettingsOpen] = useState(false);

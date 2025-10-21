@@ -36,9 +36,11 @@ export function ClosePositionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="mpaax-w-sm">
         <DialogHeader>
-          <DialogTitle>Market Close</DialogTitle>
+          <DialogTitle className="text-center text-base font-medium">
+            Market Close
+          </DialogTitle>
           <p className="text-xs text-muted-foreground">
             This will attempt to immediately close the position.
           </p>
@@ -47,7 +49,7 @@ export function ClosePositionDialog({
         <div className="space-y-3 py-2">
           <div className="flex justify-between text-sm">
             <span>Size</span>
-            <span className="text-green-500">
+            <span className="text-[#50D2C1]">
               {(size * (percent / 100)).toFixed(5)} {symbol.split("-")[0]}
             </span>
           </div>

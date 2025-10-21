@@ -33,7 +33,6 @@ interface Balance {
 }
 
 interface UserState {
-  isConnected: boolean;
   accountValue: number;
   availableFunds: number;
   positions: Position[];
@@ -55,7 +54,6 @@ interface UserState {
 }
 
 export const useUserState = create<UserState>((set, get) => ({
-  isConnected: false,
   accountValue: 0,
   availableFunds: 0,
   positions: [],
@@ -85,6 +83,8 @@ export const useUserState = create<UserState>((set, get) => ({
         type: "SPOT",
         total: b.total.toFixed(8),
         availableBalance: (b.total - b.hold).toFixed(8),
+        usdcValue: b.coin === "USDC" ? b.total.toFixed(2) : "",
+
         unit: b.coin === "USDC" ? "USDC" : b.coin,
       })) ?? [];
 

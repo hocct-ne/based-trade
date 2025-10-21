@@ -176,12 +176,10 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                 <div className="bg-card p-4 rounded-lg space-y-2">
                   <div className="text-xl font-semibold">BTC/USD</div>
                   <div className="text-sm text-muted-foreground">Bitcoin</div>
-                  <div className="font-mono text-2xl text-success">
-                    $120,250.50
-                  </div>
+                  <div className=" text-2xl text-success">$120,250.50</div>
                   <div className="text-sm">
                     <span className="text-muted-foreground">Order Book: </span>
-                    <span className="font-mono text-danger">43,251.00</span>
+                    <span className=" text-danger">43,251.00</span>
                   </div>
                 </div>
               </div>
@@ -226,7 +224,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                     <div className="text-xs text-muted-foreground mb-1">
                       Sample line style
                     </div>
-                    <div className="font-mono">USDC</div>
+                    <div className="">USDC</div>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -237,7 +235,7 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                     <div className="text-xs text-muted-foreground mb-1">
                       Sample box style
                     </div>
-                    <div className="font-mono">USDC</div>
+                    <div className="">USDC</div>
                   </div>
                 </div>
               </div>

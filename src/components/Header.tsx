@@ -24,7 +24,7 @@ export default function Header({
 }: HeaderProps) {
   const navItemsText = ["Perps", "Spot", "Affiliate"];
   const navItemsDropDown = ["Ecosystem", "Trading", "Portfolio"];
-  // const t = useTranslations();
+  // const t = useTranslationsa();
   const [activeNav, setActiveNav] = useState<string | null>(null);
   return (
     <header className="h-[60px] border-b border-border bg-card flex items-center justify-between px-4 gap-6">
@@ -168,7 +168,7 @@ export default function Header({
           className="py-0 px-2 h-2 min-h-6 bg-[#ff6940]"
         >
           {isWalletConnected ? (
-            <span className="font-mono text-sm">
+            <span className=" text-sm">
               {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
             </span>
           ) : (

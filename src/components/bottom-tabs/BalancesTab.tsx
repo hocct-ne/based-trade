@@ -11,12 +11,12 @@ export default function BalancesTab() {
       <table className="w-full">
         <thead className="text-muted-foreground border-b border-border">
           <tr>
-            <th className="w-[150px] text-left pb-2">Coin</th>
-            <th className="w-[150px] text-right pb-2">Total Balance</th>
-            <th className="w-[150px] text-right pb-2">Available Balance</th>
-            <th className="w-[150px] text-right pb-2">USDC Value</th>
-            <th className="w-[150px] text-right pb-2">PNL (ROE %)</th>
-            <th className="text-right pb-2">Send</th>
+            <th className="text-left pb-2">Coin</th>
+            <th className="text-right pb-2">Total Balance</th>
+            <th className="text-right pb-2">Available Balance</th>
+            <th className="text-right pb-2">USDC Value</th>
+            <th className="text-right pb-2">PNL (ROE %)</th>
+            <th className="min-w-[100px] text-right pb-2">Send</th>
           </tr>
         </thead>
         <tbody>

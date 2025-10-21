@@ -20,6 +20,7 @@ import { LeverageSelector } from "./LeverageSelector";
 import { MarginModeSelector } from "./MarginModeSelector";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
+import { formatQty } from "@/helpers/format";
 
 interface TradeFormProps {
   symbol: string;
@@ -42,7 +43,8 @@ export default function TradeForm({ symbol }: TradeFormProps) {
   const [priceInput, setPriceInput] = useState<string>(markPrice.toFixed(2));
   const [percent, setPercent] = useState(0);
   const [amount, setAmount] = useState<number>(0);
-  const [tokenValueInput, setTokenValueInput] = useState<string>("");
+  const [tokenValueInput, setTokenValueInput] = useState<string | number>("");
+
   const [usdcValueInput, setUsdcValueInput] = useState<string>("");
   const [isManualPriceInput, setIsManualPriceInput] = useState(false);
   const [isReduceOnly, setIsReduceOnly] = useState(false);
@@ -157,10 +159,9 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       if (currentPrice > 0) {
         let qty = usdValue / currentPrice;
         const lotSize = 0.0001;
-        qty = Math.floor(qty / lotSize) * lotSize;
-
+        qty = Math.round(qty / lotSize) * lotSize;
         setAmount(qty);
-        setTokenValueInput(qty.toFixed(5));
+        setTokenValueInput(formatQty(qty));
 
         if (availableFunds > 0) {
           const maxTradeValue = availableFunds * leverage;
@@ -196,10 +197,10 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     let qty = usdValue / currentPrice;
 
     const lotSize = 0.0001;
-    qty = Math.floor(qty / lotSize) * lotSize;
+    qty = Math.round(qty / lotSize) * lotSize;
 
     setAmount(qty);
-    setTokenValueInput(qty.toFixed(5));
+    setTokenValueInput(formatQty(qty));
 
     const actualOrderValue = qty * currentPrice;
     setUsdcValueInput(actualOrderValue.toFixed(2));
@@ -292,12 +293,12 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       <div className="px-3 py-2 text-sm space-y-1">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Available Funds</span>
-          <span className="font-mono">{availableFunds.toFixed(2)} USDC</span>
+          <span className="">{availableFunds.toFixed(2)} USDC</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Current Position</span>
-          <span className="font-mono">
-            <span className="font-mono">
+          <span className="">
+            <span className="">
               {currentPos.toFixed(5)}{" "}
               {symbol.replace("-PERP", "").replace("-USD", "")}
             </span>
@@ -328,7 +329,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
                   : "0"
               }
               className={cn(
-                "font-mono text-right text-sm bg-muted/40 border border-border/50 flex-1 focus-visible:ring-0 focus-visible:border-primary",
+                " text-right text-sm bg-muted/40 border border-border/50 flex-1 focus-visible:ring-0 focus-visible:border-primary",
                 "[appearance:textfield]",
                 "[&::-webkit-outer-spin-button]:appearance-none",
                 "[&::-webkit-inner-spin-button]:appearance-none"
@@ -357,7 +358,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
             onChange={handleAmountChange}
             placeholder="0"
             className={cn(
-              "font-mono text-left text-sm bg-transparent border-none flex-1 focus-visible:ring-0",
+              " text-left text-sm bg-transparent border-none flex-1 focus-visible:ring-0",
               "[appearance:textfield]",
               "[&::-webkit-outer-spin-button]:appearance-none",
               "[&::-webkit-inner-spin-button]:appearance-none"
@@ -375,7 +376,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
             onChange={handleUSDCValueChange}
             placeholder="0"
             className={cn(
-              "font-mono text-right text-sm bg-transparent border-none flex-1 focus-visible:ring-0",
+              " text-right text-sm bg-transparent border-none flex-1 focus-visible:ring-0",
               "[appearance:textfield]",
               "[&::-webkit-outer-spin-button]:appearance-none",
               "[&::-webkit-inner-spin-button]:appearance-none"
@@ -443,7 +444,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       <div className="p-3 border-t border-border text-xs space-y-1">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Est Liq:</span>
-          <span className="font-mono">
+          <span className="">
             {liqPrice > 0
               ? `$${liqPrice.toFixed(2)}`
               : liqPrice === 0
@@ -454,7 +455,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
 
         <div className="flex justify-between">
           <span className="text-muted-foreground">Order Val:</span>
-          <span className="font-mono">
+          <span className="">
             {orderValue > 0
               ? `$${orderValue.toFixed(2)}`
               : orderValue === 0
@@ -465,7 +466,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
 
         <div className="flex justify-between">
           <span className="text-muted-foreground">Margin Req:</span>
-          <span className="font-mono">
+          <span className="">
             {marginReq > 0
               ? `$${marginReq.toFixed(2)}`
               : marginReq === 0

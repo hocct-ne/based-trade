@@ -29,13 +29,13 @@ export default function AccountPanel({
         <div className="flex gap-2 mt-2">
           <div className="text-xs">
             <span className="text-muted-foreground">Spot: </span>
-            <span className="font-mono" data-testid="text-spot-balance">
+            <span className="" data-testid="text-spot-balance">
               ${spotBalance.toFixed(2)}
             </span>
           </div>
           <div className="text-xs">
             <span className="text-muted-foreground">Perps: </span>
-            <span className="font-mono" data-testid="text-perps-balance">
+            <span className="" data-testid="text-perps-balance">
               ${perpsBalance.toFixed(2)}
             </span>
           </div>
@@ -47,7 +47,7 @@ export default function AccountPanel({
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Balance</span>
-          <span className="font-mono" data-testid="text-perps-overview-balance">
+          <span className="" data-testid="text-perps-overview-balance">
             ${perpsBalance.toFixed(2)}
           </span>
         </div>
@@ -55,7 +55,7 @@ export default function AccountPanel({
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Unrealized PNL</span>
           <span
-            className={`font-mono ${
+            className={` ${
               unrealizedPnl >= 0 ? "text-success" : "text-danger"
             }`}
             data-testid="text-unrealized-pnl"
@@ -66,14 +66,14 @@ export default function AccountPanel({
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Cross Margin Ratio</span>
-          <span className="font-mono" data-testid="text-margin-ratio">
+          <span className="" data-testid="text-margin-ratio">
             {marginRatio.toFixed(2)}%
           </span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Account Leverage</span>
-          <span className="font-mono" data-testid="text-account-leverage">
+          <span className="" data-testid="text-account-leverage">
             {accountLeverage.toFixed(2)}x
           </span>
         </div>
