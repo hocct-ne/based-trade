@@ -1,27 +1,31 @@
+// src/hooks/useHyperConnected.ts
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { client } from "@/lib/hyperClient";
+import { useAppState } from "@/store/useAppState";
 
 export function useHyperConnected() {
-  const [isConnected, setIsConnected] = useState(false);
+  const setIsConnected = useAppState((s) => s.setIsConnected);
+
+  const isConnected = useAppState((s) => s.isConnected);
 
   useEffect(() => {
-    const setupSubscription = async () => {
-      try {
-        if (!client.ws.isConnected()) {
-          console.log("⏳ Connecting to Hyperliquid...");
+    const setupConnection = async () => {
+      if (!client.ws.isConnected()) {
+        console.log("⏳ Connecting to Hyperliquid...");
+        try {
           await client.connect();
           setIsConnected(true);
-
           console.log("✅ Connected to Hyperliquid");
+        } catch (err) {
+          console.error("❌ Error connecting to Hyperliquid:", err);
+          setIsConnected(false);
         }
-      } catch (err) {
-        console.error("❌ Error in useHyperCandle setup or connection:", err);
+      } else if (!isConnected) {
+        setIsConnected(true);
       }
     };
 
-    setupSubscription();
-  }, []);
-
-  return { isConnected };
+    setupConnection();
+  }, [setIsConnected, isConnected]);
 }

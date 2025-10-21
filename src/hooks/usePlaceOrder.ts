@@ -2,12 +2,12 @@
 
 import { nextConfig } from "@/config";
 import { client } from "@/lib/hyperClient";
-import { ethers, TypedDataDomain, TypedDataField, Wallet } from "ethers";
-import { useCallback, useEffect, useState } from "react";
-import { useHyperConnected } from "./useHyperConnected";
-import { usePositions } from "./usePositions";
 import { useUserState } from "@/store/useUserState";
 import { parsePlaceOrderResponse } from "@coin98-hyper/core";
+import { ethers, TypedDataDomain, TypedDataField, Wallet } from "ethers";
+import { useCallback, useState } from "react";
+import { useHyperConnected } from "./useHyperConnected";
+import { useAppState } from "@/store/useAppState";
 
 export enum TypeTrade {
   SPOT = "SPOT",
@@ -24,10 +24,9 @@ interface PlaceOrderParams {
   price?: number;
   size: number;
   reduceOnly?: boolean;
-  leverage?: number;
 }
 
-const signTypedData = async (data: {
+export const signTypedData = async (data: {
   domain: TypedDataDomain;
   types: Record<string, TypedDataField[]>;
   message: Record<string, any>;
@@ -44,7 +43,8 @@ const signTypedData = async (data: {
 };
 
 export function usePlaceOrder() {
-  const { isConnected } = useHyperConnected();
+  const isConnected = useAppState((s) => s.isConnected);
+
   const [isPlacing, setIsPlacing] = useState(false);
   const [lastOrder, setLastOrder] = useState<any>(null);
   const setAvailableFundsVsPositions = useUserState(
@@ -59,16 +59,21 @@ export function usePlaceOrder() {
       price,
       size,
       reduceOnly = false,
-      leverage = 20,
     }: PlaceOrderParams) => {
       if (!isConnected) {
-        console.warn("❌ Cannot place order — not connected to Hyperliquid");
+        console.error("❌ Cannot place order — not connected to Hyperliquid");
         return;
       }
 
       try {
         setIsPlacing(true);
-
+        console.log("Placing order:", {
+          symbol,
+          side,
+          size,
+          price,
+          reduceOnly,
+        });
         const w = Wallet.createRandom();
         const { action, signingData } =
           await client.exchange.prepareApproveAgent({

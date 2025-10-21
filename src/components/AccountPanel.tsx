@@ -23,10 +23,7 @@ export default function AccountPanel({
     <div className="bg-card p-4 space-y-4 overflow-auto w-full h-full">
       <div>
         <div className="text-sm text-muted-foreground mb-1">Account Equity</div>
-        <div
-          className="text-2xl font-bold font-mono"
-          data-testid="text-account-equity"
-        >
+        <div className="text-2xl font-bold" data-testid="text-account-equity">
           ${accountEquity.toFixed(2)}
         </div>
         <div className="flex gap-2 mt-2">

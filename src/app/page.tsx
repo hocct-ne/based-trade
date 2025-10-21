@@ -10,10 +10,18 @@ import AccountPanel from "@/components/AccountPanel";
 import SettingsModal from "@/components/SettingsModal";
 import WalletConnectModal from "@/components/WalletConnectModal";
 import { Hyperliquid } from "@coin98-hyper/core";
+import { useUserSnapshot } from "@/hooks/useUserSnapshot";
+import { useUserFeed } from "@/hooks/useUserFeed";
+import { useMarkPriceWs } from "@/hooks/useMarkPriceWs";
+import { useHyperConnected } from "@/hooks/useHyperConnected";
 
 const sdk = Hyperliquid.createInstane({});
 
 export default function TradingPage() {
+  useUserSnapshot();
+  useUserFeed();
+  useMarkPriceWs();
+  useHyperConnected()
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string>();
   const [settingsOpen, setSettingsOpen] = useState(false);

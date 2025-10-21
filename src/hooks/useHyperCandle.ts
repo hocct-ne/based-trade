@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useHyperConnected } from "./useHyperConnected";
 import { client } from "@/lib/hyperClient";
+import { useAppState } from "@/store/useAppState";
 
 export function useHyperCandle(symbol?: string, interval: string = "1m") {
   const [candles, setCandles] = useState<any[]>([]);
-  const { isConnected } = useHyperConnected();
+  const isConnected = useAppState((s) => s.isConnected);
 
   useEffect(() => {
     if (!isConnected) return;

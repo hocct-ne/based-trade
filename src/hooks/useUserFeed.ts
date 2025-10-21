@@ -5,10 +5,11 @@ import { client } from "@/lib/hyperClient";
 import { useUserState } from "@/store/useUserState";
 import { nextConfig } from "@/config";
 import { useHyperConnected } from "./useHyperConnected";
+import { useAppState } from "@/store/useAppState";
 
 export function useUserFeed() {
   const updateFromFeed = useUserState((s) => s.updateFromFeed);
-  const { isConnected } = useHyperConnected();
+  const isConnected = useAppState((s) => s.isConnected);
 
   useEffect(() => {
     const addr = nextConfig.nextWalletAddress;
@@ -16,12 +17,10 @@ export function useUserFeed() {
 
     client.subscriptions.subscribeToWebData2(addr, (data) => {
       // console.log("data", data);
-
       if (!data?.clearinghouseState && !data?.spotState) return;
 
       updateFromFeed(data);
     });
-
     console.log("🟢 Subscribed to WebData2 feed:", addr);
 
     return () => {

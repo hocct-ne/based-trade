@@ -2,13 +2,14 @@
 import { client } from "@/lib/hyperClient";
 import { useEffect, useState } from "react";
 import { useHyperConnected } from "./useHyperConnected";
+import { useAppState } from "@/store/useAppState";
 
 export function useHyperOrderbook(symbol: string) {
   const [orderbook, setOrderbook] = useState<{ asks: any[]; bids: any[] }>({
     asks: [],
     bids: [],
   });
-  const { isConnected } = useHyperConnected();
+  const isConnected = useAppState((s) => s.isConnected);
   useEffect(() => {
     if (!isConnected) return;
     client.subscriptions.subscribeToL2Book(symbol, (data: any) => {

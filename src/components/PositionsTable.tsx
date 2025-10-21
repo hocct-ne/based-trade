@@ -29,11 +29,7 @@ export function PositionsTable({ positions }: { positions: Position[] }) {
           <div>{p.markPrice.toLocaleString()}</div>
           <div>{p.liqPrice.toLocaleString()}</div>
           <div>${p.margin.toFixed(2)}</div>
-          <div
-            className={`${
-              p.pnl >= 0 ? "text-green-400" : "text-red-400"
-            } font-mono`}
-          >
+          <div className={`${p.pnl >= 0 ? "text-green-400" : "text-red-400"}`}>
             {p.pnl.toFixed(2)}
           </div>
         </div>

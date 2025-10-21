@@ -97,7 +97,7 @@ export default function OrderBook() {
             </div>
 
             <div className="py-1 px-2 bg-accent/50 border-y border-border">
-              <div className="relative flex justify-between text-xs font-mono">
+              <div className="relative flex justify-between text-xs">
                 <span className={"w-1/3 text-left"}>Spread</span>
                 <span className="w-1/3 text-center text-foreground">
                   {/* {spread.toFixed(2)} */}

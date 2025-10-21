@@ -11,17 +11,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { symbols } from "pino";
 
 interface LeverageSelectorProps {
   value: number;
   max?: number;
   onChange: (val: number) => void;
+  symbol?: string;
 }
 
 export function LeverageSelector({
   value,
   onChange,
   max = 40,
+  symbol,
 }: LeverageSelectorProps) {
   const [open, setOpen] = useState(false);
   const [tempLev, setTempLev] = useState(value);
@@ -52,15 +55,9 @@ export function LeverageSelector({
 
         <div className="space-y-3 py-2">
           <p className="text-xs text-muted-foreground text-center leading-snug">
-            Control the leverage used for BTC positions. The maximum leverage is{" "}
+            Control the leverage used for {symbol} positions. The maximum
+            leverage is{" "}
             <span className="text-foreground font-medium">{max}x</span>.
-          </p>
-          <p className="text-xs text-muted-foreground text-center leading-snug">
-            Max position size decreases the higher your leverage. The max
-            position size for{" "}
-            <span className="font-medium text-foreground">{tempLev}x</span>{" "}
-            leverage on BTC is{" "}
-            <span className="text-foreground font-medium">$10,000</span>.
           </p>
 
           <div className="flex items-center gap-3">
@@ -79,7 +76,7 @@ export function LeverageSelector({
                 onChange={(e) =>
                   setTempLev(Math.min(Number(e.target.value), max))
                 }
-                className="w-12 bg-transparent border border-border/50 text-center text-sm rounded-md font-mono"
+                className="w-12 bg-transparent border border-border/50 text-center text-sm rounded-md"
               />
               <span className="text-sm text-muted-foreground">x</span>
             </div>

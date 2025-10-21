@@ -2,10 +2,11 @@
 import { client } from "@/lib/hyperClient";
 import { useEffect, useState } from "react";
 import { useHyperConnected } from "./useHyperConnected";
+import { useAppState } from "@/store/useAppState";
 
 export function useHyperTrades(symbol: string) {
   const [trades, setTrades] = useState<any[]>([]);
-  const { isConnected } = useHyperConnected();
+  const isConnected = useAppState((s) => s.isConnected);
 
   useEffect(() => {
     if (!isConnected) return;

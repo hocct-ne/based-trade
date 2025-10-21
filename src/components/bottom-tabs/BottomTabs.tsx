@@ -6,10 +6,15 @@ import PositionsTab from "./PositionsTab";
 import OrdersTab from "./OrdersTab";
 import TradeHistoryTab from "./TradeHistoryTab";
 import OrderHistoryTab from "./OrderHistoryTab";
+import { useUserState } from "@/store/useUserState";
 
 export default function BottomTabs() {
+  const positions = useUserState((s) => s.positions);
+  const allBalances = useUserState((s) => s.allBalances);
+  // console.log("all", allBalances);
+
   return (
-    <div className="flex-1 bg-card border-t p-2 border-r border-border overflow-auto h-full">
+    <div className="flex-1 bg-card border-t p-2 border-r border-border overflow-auto h-full text-[12px]!">
       <Tabs defaultValue="balances" className="w-full">
         <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-border h-10 p-0">
           <TabsTrigger
@@ -17,21 +22,21 @@ export default function BottomTabs() {
             className="rounded-none data-[state=active]:bg-accent"
             data-testid="tab-balances"
           >
-            Balances
+            Balances ({allBalances.length})
           </TabsTrigger>
           <TabsTrigger
             value="positions"
             className="rounded-none data-[state=active]:bg-accent"
             data-testid="tab-positions"
           >
-            Positions(0)
+            Positions({positions.length})
           </TabsTrigger>
           <TabsTrigger
             value="orders"
             className="rounded-none data-[state=active]:bg-accent"
             data-testid="tab-open-orders"
           >
-            Open Orders(0)
+            Open Orders({0})
           </TabsTrigger>
           <TabsTrigger
             value="trade-history"

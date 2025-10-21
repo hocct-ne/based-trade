@@ -51,7 +51,7 @@ export default function MarketTicker({
         {[1, 1, 1].map((_, index) => (
           <div key={index} className="flex items-center gap-2 text-sm">
             <div
-              className={`flex items-center gap-1 font-mono ${
+              className={`flex items-center gap-1 ${
                 isPositive ? "text-[#29ab87]" : "text-danger"
               }`}
             >
@@ -106,7 +106,7 @@ export default function MarketTicker({
               24h Change
             </div>
             <div
-              className={`min-w-[145px] flex items-center gap-1 font-mono ${
+              className={`min-w-[145px] flex items-center gap-1 ${
                 isPositive ? "text-success" : "text-danger"
               }`}
             >

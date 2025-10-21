@@ -12,8 +12,6 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { useMarkPrice } from "@/hooks/useMarkPrice";
 import { usePlaceOrder } from "@/hooks/usePlaceOrder";
-import { useUserFeed } from "@/hooks/useUserFeed";
-import { useUserSnapshot } from "@/hooks/useUserSnapshot";
 import { getMarkPrice } from "@/lib/getMarkPrice";
 import { cn } from "@/lib/utils";
 import { useUserState } from "@/store/useUserState";
@@ -28,15 +26,10 @@ interface TradeFormProps {
 }
 
 export default function TradeForm({ symbol }: TradeFormProps) {
-  useUserSnapshot();
-  useUserFeed();
   const { placeOrder, isPlacing } = usePlaceOrder();
   const markPrice = useMarkPrice(symbol.split("-")[0]);
-
   const availableFunds = useUserState((s) => s.availableFunds);
-
   const getPositionSize = useUserState((s) => s.getPositionSize);
-
   const currentPos = getPositionSize(symbol.split("-")[0]);
 
   const [marginMode, setMarginMode] = useState<"cross" | "isolated">(
@@ -54,9 +47,11 @@ export default function TradeForm({ symbol }: TradeFormProps) {
   const [isManualPriceInput, setIsManualPriceInput] = useState(false);
   const [isReduceOnly, setIsReduceOnly] = useState(false);
 
-  const orderValue = (price ?? markPrice) * (amount ?? 0);
+  const orderValue =
+    tokenValueInput !== "" ? (price ?? markPrice) * (amount ?? 0) : 0;
   const marginReq = orderValue / leverage;
   const liqPrice = (() => {
+    if (tokenValueInput === "") return 0;
     if (!price || leverage <= 0 || amount <= 0) return 0;
 
     // Tỷ lệ Maintenance Margin Rate (MMR) - GIẢ ĐỊNH 0.5% - CẦN CÓ GIÁ TRỊ THỰC TẾ CỦA SÀN
@@ -102,6 +97,14 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     setUsdcValueInput("");
     setTokenValueInput("");
   }, [symbol]);
+
+  useEffect(() => {
+    if (percent > 0) {
+      const maxTradeValue = availableFunds * leverage;
+      const newPercent = (Number(usdcValueInput) / maxTradeValue) * 100;
+      handleSliderChange([newPercent]);
+    }
+  }, [leverage, availableFunds, price, markPrice, usdcValueInput]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -223,15 +226,6 @@ export default function TradeForm({ symbol }: TradeFormProps) {
   };
 
   const handleSubmit = async () => {
-    console.log("Placing order:", {
-      symbol: `${symbol.split("-")[0]}-PERP`,
-      side,
-      // orderType,
-      price,
-      amount,
-      leverage,
-    });
-
     await placeOrder({
       symbol: `${symbol.split("-")[0]}-PERP`,
       side,
@@ -239,7 +233,6 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       price,
       size: amount,
       reduceOnly: isReduceOnly,
-      leverage,
     });
   };
 
@@ -257,6 +250,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
           <LeverageSelector
             value={leverage}
             onChange={(val) => setLeverage(val)}
+            symbol={symbol.split("-")[0]}
           />
         </div>
 
@@ -394,7 +388,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       <div className="px-3 py-2">
         <div className="flex justify-between mb-1 text-xs text-muted-foreground">
           <span>Amount</span>
-          <span>{percent}%</span>
+          <span>{percent.toFixed(0)}%</span>
         </div>
         <Slider
           value={[percent]}
