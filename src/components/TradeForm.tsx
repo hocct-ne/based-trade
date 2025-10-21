@@ -9,18 +9,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { Slider } from "@/components/ui/slider";
+import { formatQty } from "@/helpers/format";
 import { useMarkPrice } from "@/hooks/useMarkPrice";
 import { usePlaceOrder } from "@/hooks/usePlaceOrder";
 import { getMarkPrice } from "@/lib/getMarkPrice";
 import { cn } from "@/lib/utils";
 import { useUserState } from "@/store/useUserState";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LeverageSelector } from "./LeverageSelector";
 import { MarginModeSelector } from "./MarginModeSelector";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
-import { formatQty } from "@/helpers/format";
 
 interface TradeFormProps {
   symbol: string;
@@ -29,6 +31,7 @@ interface TradeFormProps {
 export default function TradeForm({ symbol }: TradeFormProps) {
   const { placeOrder, isPlacing } = usePlaceOrder();
   const markPrice = useMarkPrice(symbol.split("-")[0]);
+
   const availableFunds = useUserState((s) => s.availableFunds);
   const getPositionSize = useUserState((s) => s.getPositionSize);
   const currentPos = getPositionSize(symbol.split("-")[0]);
@@ -37,23 +40,27 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     "isolated"
   );
   const [leverage, setLeverage] = useState(20);
-  const [orderType, setOrderType] = useState<"limit" | "market">("limit");
+  const [orderType, setOrderType] = useState<"limit" | "market">("market");
   const [side, setSide] = useState<"long" | "short">("long");
   const [price, setPrice] = useState<number>(markPrice);
   const [priceInput, setPriceInput] = useState<string>(markPrice.toFixed(2));
   const [percent, setPercent] = useState(0);
   const [amount, setAmount] = useState<number>(0);
-  const [tokenValueInput, setTokenValueInput] = useState<string | number>("");
+  const [tokenValueInput, setTokenValueInput] = useState<number | string>(0);
 
-  const [usdcValueInput, setUsdcValueInput] = useState<string>("");
+  const [usdcValueInput, setUsdcValueInput] = useState<number | string>(0);
   const [isManualPriceInput, setIsManualPriceInput] = useState(false);
   const [isReduceOnly, setIsReduceOnly] = useState(false);
 
   const orderValue =
-    tokenValueInput !== "" ? (price ?? markPrice) * (amount ?? 0) : 0;
-  const marginReq = orderValue / leverage;
+    tokenValueInput !== 0 ? (price ?? markPrice) * (amount ?? 0) : 0;
+  const marginReq =
+    orderValue / leverage > availableFunds
+      ? availableFunds
+      : orderValue / leverage;
   const liqPrice = (() => {
-    if (tokenValueInput === "") return 0;
+    if (tokenValueInput === 0) return 0;
+
     if (!price || leverage <= 0 || amount <= 0) return 0;
 
     // Tỷ lệ Maintenance Margin Rate (MMR) - GIẢ ĐỊNH 0.5% - CẦN CÓ GIÁ TRỊ THỰC TẾ CỦA SÀN
@@ -88,7 +95,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
   })();
 
   useEffect(() => {
-    if (!isManualPriceInput && orderType === "limit") {
+    if (!isManualPriceInput && orderType === "market") {
       setPrice(markPrice);
       setPriceInput(markPrice.toFixed(2));
     }
@@ -96,8 +103,8 @@ export default function TradeForm({ symbol }: TradeFormProps) {
 
   useEffect(() => {
     setPercent(0);
-    setUsdcValueInput("");
-    setTokenValueInput("");
+    setUsdcValueInput(0);
+    setTokenValueInput(0);
   }, [symbol]);
 
   useEffect(() => {
@@ -106,29 +113,34 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       const newPercent = (Number(usdcValueInput) / maxTradeValue) * 100;
       handleSliderChange([newPercent]);
     }
-  }, [leverage, availableFunds, price, markPrice, usdcValueInput]);
+  }, [leverage, availableFunds, price, markPrice]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
+    let inputValue = e.target.value;
+    const currentPrice = price || markPrice;
+    const maxTradeValue = availableFunds * leverage;
+    let tradeValue = Number(inputValue) * currentPrice;
 
     if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
-      setTokenValueInput(inputValue);
+      if (tradeValue > maxTradeValue) {
+        inputValue = formatQty(maxTradeValue / currentPrice).toString();
+      }
 
+      setTokenValueInput(inputValue);
       const val = Number(inputValue);
 
       if (isNaN(val) || val < 0) {
         setAmount(0);
-        setUsdcValueInput("");
+        setUsdcValueInput(0);
         return;
       }
 
       setAmount(val);
 
-      const currentPrice = price || markPrice;
       if (currentPrice > 0 && availableFunds > 0) {
-        const usdValue = val * currentPrice;
+        const usdValue = Number((val * currentPrice).toFixed(2));
 
-        setUsdcValueInput(usdValue.toFixed(2));
+        setUsdcValueInput(usdValue);
 
         const maxTradeValue = availableFunds * leverage;
         const newPercent = (usdValue / maxTradeValue) * 100;
@@ -136,29 +148,33 @@ export default function TradeForm({ symbol }: TradeFormProps) {
         setPercent(Math.min(newPercent, 100));
       } else {
         setPercent(0);
-        setUsdcValueInput("");
+        setUsdcValueInput(0);
       }
     }
   };
 
   const handleUSDCValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
+    const maxTradeValue = availableFunds * leverage;
+
+    let inputValue = e.target.value;
 
     if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+      if (Number(inputValue) > Number(maxTradeValue)) {
+        inputValue = maxTradeValue.toFixed(2);
+      }
       setUsdcValueInput(inputValue);
-
-      const usdValue = Number(inputValue);
+      let usdValue = Number(inputValue);
 
       if (isNaN(usdValue) || usdValue < 0) {
         setAmount(0);
-        setTokenValueInput("");
+        setTokenValueInput(0);
         return;
       }
 
       const currentPrice = price || markPrice;
       if (currentPrice > 0) {
         let qty = usdValue / currentPrice;
-        const lotSize = 0.0001;
+        const lotSize = 0.00001;
         qty = Math.round(qty / lotSize) * lotSize;
         setAmount(qty);
         setTokenValueInput(formatQty(qty));
@@ -174,7 +190,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       } else {
         setAmount(0);
         setPercent(0);
-        setTokenValueInput("");
+        setTokenValueInput(0);
       }
     }
   };
@@ -186,8 +202,8 @@ export default function TradeForm({ symbol }: TradeFormProps) {
     const currentPrice = price || markPrice;
     if (!currentPrice || currentPrice <= 0 || !availableFunds) {
       setAmount(0);
-      setTokenValueInput("");
-      setUsdcValueInput("");
+      setTokenValueInput(0);
+      setUsdcValueInput(0);
       return;
     }
 
@@ -196,14 +212,12 @@ export default function TradeForm({ symbol }: TradeFormProps) {
 
     let qty = usdValue / currentPrice;
 
-    const lotSize = 0.0001;
+    const lotSize = 0.00001;
     qty = Math.round(qty / lotSize) * lotSize;
 
     setAmount(qty);
     setTokenValueInput(formatQty(qty));
-
-    const actualOrderValue = qty * currentPrice;
-    setUsdcValueInput(actualOrderValue.toFixed(2));
+    setUsdcValueInput(usdValue.toFixed(2));
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +247,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
       // orderType,
       price,
       size: amount,
-      reduceOnly: isReduceOnly,
+      reduceOnly: false,
     });
   };
 
@@ -306,7 +320,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
         </div>
       </div>
 
-      {orderType === "limit" && (
+      {orderType === "market" && (
         <div className="px-3 py-2 space-y-1.5">
           <label
             htmlFor="price"
@@ -481,13 +495,22 @@ export default function TradeForm({ symbol }: TradeFormProps) {
           disabled={isPlacing || percent === 0}
           onClick={handleSubmit}
           className={cn(
-            "w-full rounded-md text-white",
+            "w-full rounded-md text-white flex items-center justify-center gap-2",
             side === "long"
-              ? "bg-[#29ab87] hover:bg-[#29ab87]"
-              : "bg-[#ff5252] hover:bg-[#ff5252]"
+              ? "bg-[#29ab87] hover:bg-[#29ab87]/90"
+              : "bg-[#ff5252] hover:bg-[#ff5252]/90"
           )}
         >
-          {side === "long" ? "Long" : "Short"} {symbol.split("-")[0]}
+          {isPlacing ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Order submitted...</span>
+            </>
+          ) : (
+            <>
+              {side === "long" ? "Long" : "Short"} {symbol.split("-")[0]}
+            </>
+          )}
         </Button>
       </div>
     </div>

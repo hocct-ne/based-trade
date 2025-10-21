@@ -3,10 +3,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BalancesTab from "./BalancesTab";
 import PositionsTab from "./PositionsTab";
-import OrdersTab from "./OrdersTab";
 import TradeHistoryTab from "./TradeHistoryTab";
 import OrderHistoryTab from "./OrderHistoryTab";
 import { useUserState } from "@/store/useUserState";
+import { OrdersTab } from "./OrdersTab";
 
 export default function BottomTabs() {
   const positions = useUserState((s) => s.positions);

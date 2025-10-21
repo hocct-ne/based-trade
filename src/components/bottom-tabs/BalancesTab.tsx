@@ -1,10 +1,10 @@
 "use client";
 import { useUserState } from "@/store/useUserState";
 import { Button } from "@/components/ui/button";
+import { useMarketState } from "@/store/useMarketState";
 
 export default function BalancesTab() {
   const allBalances = useUserState((s) => s.allBalances);
-  const markPrices = useUserState((s) => s.markPrices);
 
   return (
     <div className="overflow-x-auto text-[12px]!">
@@ -20,27 +20,29 @@ export default function BalancesTab() {
           </tr>
         </thead>
         <tbody>
-          {allBalances.map((b) => (
-            <tr
-              key={b.coin}
-              className="border-b border-border hover:bg-muted/20"
-            >
-              <td className="py-2 font-semibold">{b.coin}</td>
-              <td className="text-right">
-                {b.total} {b.unit}
-              </td>
-              <td className="text-right">
-                {b.availableBalance} {b.unit}
-              </td>
-              <td className="text-right">
-                {b.usdcValue ? b.usdcValue : ""} {b.unit}
-              </td>
-              <td className="text-right">-</td>
-              <td className="text-right">
-                <Button variant="ghost" size="sm"></Button>
-              </td>
-            </tr>
-          ))}
+          {allBalances.map((b) => {
+            return (
+              <tr
+                key={b.coin}
+                className="border-b border-border hover:bg-muted/20"
+              >
+                <td className="py-2 font-semibold">{b.coin}</td>
+                <td className="text-right">
+                  {b.total} {b.unit}
+                </td>
+                <td className="text-right">
+                  {b.availableBalance} {b.unit}
+                </td>
+                <td className="text-right">
+                  {b.usdcValue ? b.usdcValue : ""} {b.unit}
+                </td>
+                <td className="text-right">-</td>
+                <td className="text-right">
+                  <Button variant="ghost" size="sm"></Button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

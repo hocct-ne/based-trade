@@ -26,7 +26,7 @@ export default function TradingPage() {
   const [walletAddress, setWalletAddress] = useState<string>();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
-  const [selectedPair, setSelectedPair] = useState("BTC-USD");
+  const [selectedPair, setSelectedPair] = useState("BTC-PERP");
 
   const handleConnectWallet = () => {
     if (walletConnected) {
@@ -56,7 +56,7 @@ export default function TradingPage() {
 
       <div className="grid grid-cols-[1fr_350px_400px] grid-rows-[600px_350px] overflow-hidden flex-1">
         <div className="col-start-1 row-start-1 flex flex-col min-w-0 border-r border-border">
-          <div className="flex-col min-h-220 ">
+          <div className="">
             <div>
               <MarketTicker
                 pair={selectedPair}
@@ -70,12 +70,15 @@ export default function TradingPage() {
                 onPairChange={setSelectedPair}
               />
             </div>
-            {/* <TradingChart symbol={selectedPair} /> */}
+            <TradingChart
+              className="h-[488px]"
+              symbol={selectedPair.split("-")[0]}
+            />
           </div>
         </div>
 
         <div className="col-start-2 row-start-1 border-r border-border overflow-auto">
-          <OrderBook />
+          <OrderBook symbol={selectedPair} />
         </div>
 
         <div className="col-start-3 row-start-1 overflow-auto">
@@ -87,14 +90,7 @@ export default function TradingPage() {
         </div>
 
         <div className="col-start-3 row-start-2 border-t border-border overflow-auto">
-          <AccountPanel
-            accountEquity={walletConnected ? 10000 : 0}
-            spotBalance={0}
-            perpsBalance={walletConnected ? 10000 : 0}
-            unrealizedPnl={0}
-            marginRatio={0}
-            accountLeverage={0}
-          />
+          <AccountPanel />
         </div>
       </div>
 

@@ -10,6 +10,7 @@ export function useMarkPriceWs() {
       useUserState.getState().updateMarkPrices(mids as AllMids);
     });
 
+
     return () => {
       client.subscriptions.unsubscribeFromAllMids();
     };

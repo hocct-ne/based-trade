@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useClosePosition } from "@/hooks/useClosePosition";
 import { useUserState } from "@/store/useUserState";
 import { useState } from "react";
 import { ClosePositionDialog } from "../ClosePositionDialog";
+import { cn } from "@/lib/utils";
 
 export default function PositionsTab() {
   const positions = useUserState((s) => s.positions);
@@ -43,6 +43,7 @@ export default function PositionsTab() {
         <tbody>
           {positions.map((pos, idx) => {
             const p = pos.position;
+            const side = p.szi > 0 ? "long" : p.szi < 0 ? "short" : "none";
             const coin = p.coin.replace("-PERP", "");
             const roe = p.returnOnEquity * 100;
             const isProfit = p.unrealizedPnl >= 0;
@@ -52,11 +53,22 @@ export default function PositionsTab() {
                 key={idx}
                 className="border-b border-border/50 hover:bg-muted/10"
               >
-                <td className="px-2 py-2 font-medium text-left pl-3 bg-[linear-gradient(90deg,rgb(31,166,125)_0px,rgb(31,166,125)_4px,rgb(11,50,38)_4px,transparent_100%)]">
+                <td
+                  className={cn(
+                    "px-2 py-2 font-medium text-left pl-3",
+                    side === "long"
+                      ? "bg-[linear-gradient(90deg,rgb(31,166,125)_0px,rgb(31,166,125)_4px,rgb(11,50,38)_4px,transparent_100%)]"
+                      : "bg-[linear-gradient(90deg,rgb(255,82,82)_0px,rgb(255,82,82)_4px,rgb(50,11,11)_4px,transparent_100%)]"
+                  )}
+                >
                   {coin} {p.leverage.value}x
                 </td>
 
-                <td className="px-2 py-2 text-[#29ab87]">
+                <td
+                  className={`px-2 py-2 ${
+                    side === "long" ? "text-[#29ab87]" : "text-[#ff5252]"
+                  }`}
+                >
                   {p.szi.toFixed(4)} {coin}
                 </td>
                 <td className="px-2 py-2">${p.positionValue.toFixed(2)}</td>
@@ -86,9 +98,9 @@ export default function PositionsTab() {
                   $
                   {p.cumFunding?.sinceOpen
                     ? p.cumFunding.sinceOpen.toFixed(3)
-                    : "-"}
+                    : "0"}
                 </td>
-                <td className="px-2 py-2 space-x-1 text-[#50D2C1]">
+                <td className="px-2 py-2 space-x-1 text-[#50D2C1] text-center">
                   {/* <Button variant="ghost" size="sm">
                     Limit
                   </Button> */}

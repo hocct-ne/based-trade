@@ -1,8 +1,7 @@
 "use client";
 import { client } from "@/lib/hyperClient";
-import { useEffect, useState } from "react";
-import { useHyperConnected } from "./useHyperConnected";
 import { useAppState } from "@/store/useAppState";
+import { useEffect, useState } from "react";
 
 export function useHyperOrderbook(symbol: string) {
   const [orderbook, setOrderbook] = useState<{ asks: any[]; bids: any[] }>({
@@ -18,6 +17,10 @@ export function useHyperOrderbook(symbol: string) {
       setOrderbook({ asks, bids });
     });
     console.log(`📡 Subscribed to trades.`);
+
+    return () => {
+      client.subscriptions.unsubscribeFromL2Book(symbol);
+    };
   }, [symbol, isConnected]);
 
   return orderbook;

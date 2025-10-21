@@ -2,25 +2,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHyperOrderbook } from "@/hooks/useHyperOrderbook";
 import { useHyperTrades } from "@/hooks/useHyperTrades";
-import { useEffect, useState } from "react";
-``;
-interface OrderBookEntry {
-  price: number;
-  amount: number;
-  total: number;
+
+interface TradeFormProps {
+  symbol: string;
 }
-
-// interface OrderBookProps {
-//   bids: OrderBookEntry[];
-//   asks: OrderBookEntry[];
-//   spread: number;
-//   spreadPercent: number;
-// }
-
-export default function OrderBook() {
-  const orderbook = useHyperOrderbook("ETH");
-  const historyTrades = useHyperTrades("ETH");
-  // console.log("aa", historyTrades);
+export default function OrderBook({ symbol }: TradeFormProps) {
+  const orderbook = useHyperOrderbook(symbol.split("-")[0]);
+  const historyTrades = useHyperTrades(symbol.split("-")[0]);
 
   const { asks: asksValue, bids: bidsValue } = orderbook;
 
@@ -100,18 +88,18 @@ export default function OrderBook() {
               <div className="relative flex justify-between text-xs">
                 <span className={"w-1/3 text-left"}>Spread</span>
                 <span className="w-1/3 text-center text-foreground">
-                  {/* {spread.toFixed(2)} */}
+                  {asksValue[0] && bidsValue[0] && (
+                    <span className="text-center ml-6">
+                      {Math.abs(
+                        parseFloat(asksValue[0].px) -
+                          parseFloat(bidsValue[0].px)
+                      ).toFixed(2)}
+                    </span>
+                  )}
                 </span>
                 <span className="w-1/3 text-right text-muted-foreground">
                   {/* {spreadPercent.toFixed(2)}% */}
                 </span>
-                {asksValue[0] && bidsValue[0] && (
-                  <span>
-                    {(
-                      parseFloat(asksValue[0].px) - parseFloat(bidsValue[0].px)
-                    ).toFixed(2)}
-                  </span>
-                )}
               </div>
             </div>
 

@@ -32,6 +32,19 @@ interface Balance {
   unrealizedPnl?: number;
 }
 
+interface Order {
+  time: string;
+  type: string;
+  coin: string;
+  direction: "Buy" | "Sell";
+  size: number;
+  originalSize: number;
+  orderValue: number;
+  price: number;
+  reduceOnly?: boolean;
+  trigger?: string;
+}
+
 interface UserState {
   accountValue: number;
   availableFunds: number;
@@ -39,6 +52,7 @@ interface UserState {
   balances: Balance[];
   allBalances: any[];
   markPrices: AllMids;
+  openOrders: Order[];
 
   updateFromFeed: (data: any) => void;
   setAvailableFundsVsPositions: ({
@@ -51,6 +65,8 @@ interface UserState {
   getPositionSize: (symbol: string) => number;
   getBalance: (coin: string) => Balance | undefined;
   updateMarkPrices: (mids: AllMids) => void;
+  updateOrder: (orders: Order[]) => void;
+  // cancelOrder: (id: string) => void;
 }
 
 export const useUserState = create<UserState>((set, get) => ({
@@ -60,6 +76,7 @@ export const useUserState = create<UserState>((set, get) => ({
   balances: [],
   allBalances: [],
   markPrices: {},
+  openOrders: [],
 
   updateFromFeed: (data) => {
     const clearing = data.clearinghouseState ?? {};
@@ -111,4 +128,6 @@ export const useUserState = create<UserState>((set, get) => ({
     return get().balances.find((b) => b.coin === coin);
   },
   updateMarkPrices: (mids) => set({ markPrices: mids }),
+  updateOrder: (orders) => set({ openOrders: orders }),
+  // cancelOrder:
 }));

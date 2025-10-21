@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useClosePosition } from "@/hooks/useClosePosition";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface ClosePositionDialogProps {
   symbol: string;
@@ -25,13 +27,19 @@ export function ClosePositionDialog({
   isOpen,
   onClose,
 }: ClosePositionDialogProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const [percent, setPercent] = useState(100);
   const closePosition = useClosePosition();
-  const closeBtnDisabled = size <= 0;
+  const closeBtnDisabled = size <= 0 || isLoading;
 
   const handleConfirm = async () => {
-    await closePosition(symbol, percent / 100);
-    onClose();
+    setIsLoading(true);
+    try {
+      await closePosition(symbol, percent / 100);
+      onClose();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -58,14 +66,22 @@ export function ClosePositionDialog({
             value={[percent]}
             onValueChange={(v) => setPercent(v[0])}
             max={100}
-            step={25}
+            step={1}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>0%</span>
-            <span>25%</span>
-            <span>50%</span>
-            <span>75%</span>
-            <span>100%</span>
+            {[0, 25, 50, 75, 100].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPercent(p)}
+                className={cn(
+                  "transition-colors",
+                  "hover:text-foreground",
+                  percent === p && "text-foreground font-medium"
+                )}
+              >
+                {p}%
+              </button>
+            ))}
           </div>
         </div>
 
@@ -75,7 +91,14 @@ export function ClosePositionDialog({
             onClick={handleConfirm}
             disabled={closeBtnDisabled}
           >
-            Market Close
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Closing...
+              </>
+            ) : (
+              "Market Close"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
