@@ -96,11 +96,11 @@ export default function MarketTicker({
             </div>
 
             <div>
-              <div className="min-w-[80px] text-muted-foreground mb-1">
+              <div className="min-w-[90px] text-muted-foreground mb-1">
                 24h Change
               </div>
               <div
-                className={`min-w-[80px] flex items-center gap-1 ${
+                className={`min-w-[90px] flex items-center gap-1 ${
                   isPositive ? "text-[#29ab87]]" : "text-[#ff5252]"
                 }`}
               >

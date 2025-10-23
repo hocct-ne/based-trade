@@ -7,8 +7,8 @@ export function MarketTickerTabs({ TickerData }: { TickerData: Market[] }) {
   });
 
   return (
-    <div className="text-xs ">
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="text-xs  ">
+      <div className="flex items-center gap-4 ">
         {filteredData.slice(0, 5).map((item, index) => {
           const isPositive = Number(item.change24h) >= 0;
           return (
@@ -25,7 +25,9 @@ export function MarketTickerTabs({ TickerData }: { TickerData: Market[] }) {
                 {Number(item.change24h).toFixed(2)}%
               </span>
 
-              <span className="text-white">{item.symbol}</span>
+              <span className="text-white whitespace-nowrap">
+                {item.symbol}
+              </span>
 
               <span className="text-muted-foreground">
                 {Number(item.markPx).toLocaleString()}

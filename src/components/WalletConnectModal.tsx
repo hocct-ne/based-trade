@@ -31,10 +31,10 @@ export default function WalletConnectModal({
         <div className="flex flex-col items-center text-center space-y-6 py-6">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 bg-primary rounded-md" />
-            <span className="text-2xl font-bold text-primary">based</span>
+            <span className="text-2xl font-bold text-primary">Coin98</span>
           </div>
 
-          <h2 className="text-xl font-semibold">Login to Based</h2>
+          <h2 className="text-xl font-semibold">Login </h2>
 
           <div className="w-full space-y-3">
             <Button
@@ -64,10 +64,6 @@ export default function WalletConnectModal({
                 <SiApple className="h-4 w-4" />
                 Apple
               </Button>
-            </div>
-
-            <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-              Protected by <span className="font-semibold">privy</span>
             </div>
 
             <div className="relative py-4">
