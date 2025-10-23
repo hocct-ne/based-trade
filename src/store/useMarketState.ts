@@ -1,3 +1,4 @@
+import { ActiveAssetDataState } from "@coin98-hyper/core";
 import { create } from "zustand";
 
 export interface Market {
@@ -14,14 +15,22 @@ export interface Market {
 
 interface MarketState {
   markets: Market[];
+  activeAssetData: Record<string, Record<string, ActiveAssetDataState>>;
+
   setMarkets: (m: Market[]) => void;
   updateMarkPrices: (mids: Record<string, string>) => void;
+  setActiveAssetData: (
+    address: string,
+    symbol: string,
+    data: ActiveAssetDataState
+  ) => void;
 }
 
 export const useMarketState = create<MarketState>((set, get) => ({
   markets: [],
-  setMarkets: (m) => set({ markets: m }),
+  activeAssetData: {},
 
+  setMarkets: (m) => set({ markets: m }),
   updateMarkPrices: (mids) => {
     const prev = get().markets;
     const updated = prev.map((m) => ({
@@ -30,4 +39,14 @@ export const useMarketState = create<MarketState>((set, get) => ({
     }));
     set({ markets: updated });
   },
+  setActiveAssetData: (address, symbol, data) =>
+    set((state) => ({
+      activeAssetData: {
+        ...state.activeAssetData,
+        [address]: {
+          ...state.activeAssetData[address],
+          [symbol]: data,
+        },
+      },
+    })),
 }));

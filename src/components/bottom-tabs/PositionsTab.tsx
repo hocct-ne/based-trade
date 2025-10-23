@@ -69,24 +69,37 @@ export default function PositionsTab() {
                     side === "long" ? "text-[#29ab87]" : "text-[#ff5252]"
                   }`}
                 >
-                  {p.szi.toFixed(4)} {coin}
+                  {Number(p.szi.toFixed(4)).toLocaleString()} {coin}
                 </td>
-                <td className="px-2 py-2">${p.positionValue.toFixed(2)}</td>
-                <td className="px-2 py-2">{p.entryPx.toFixed(1)}</td>
                 <td className="px-2 py-2">
-                  {Number(markPrices[p.coin]).toFixed(1) ?? "-"}
+                  ${Number(p.positionValue.toFixed(2)).toLocaleString()}
+                </td>
+                <td className="px-2 py-2">
+                  {Number(p.entryPx.toFixed(1)).toLocaleString()}
+                </td>
+                <td className="px-2 py-2">
+                  {markPrices[p.coin] != null
+                    ? Number(markPrices[p.coin]).toLocaleString("en-US", {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      })
+                    : "-"}
                 </td>
                 <td
                   className={`px-2 py-2 ${
                     isProfit ? "text-[#29ab87]" : "text-[#ff5252]"
                   }`}
                 >
-                  {isProfit ? "+" : ""}${p.unrealizedPnl.toFixed(2)} (
+                  {isProfit ? "+" : ""}$
+                  {Number(p.unrealizedPnl.toFixed(2)).toLocaleString()} (
                   {roe.toFixed(1)}%)
                 </td>
-                <td className="px-2 py-2">{p.liquidationPx.toFixed(1)}</td>
                 <td className="px-2 py-2">
-                  ${p.marginUsed.toFixed(2)} ({p.leverage.type})
+                  {Number(p.liquidationPx.toFixed(1)).toLocaleString()}
+                </td>
+                <td className="px-2 py-2">
+                  ${Number(p.marginUsed.toFixed(2)).toLocaleString()} (
+                  {p.leverage.type})
                 </td>
                 <td
                   className={`px-2 py-2 ${
@@ -97,7 +110,7 @@ export default function PositionsTab() {
                 >
                   $
                   {p.cumFunding?.sinceOpen
-                    ? p.cumFunding.sinceOpen.toFixed(3)
+                    ? Number(p.cumFunding.sinceOpen.toFixed(2)).toLocaleString()
                     : "0"}
                 </td>
                 <td className="px-2 py-2 space-x-1 text-[#50D2C1] text-center">

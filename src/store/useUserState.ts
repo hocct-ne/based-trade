@@ -1,7 +1,7 @@
 import { AllMids } from "@coin98-hyper/core";
 import { create } from "zustand";
 
-interface Position {
+export interface Position {
   type: string;
   position: {
     coin: string;
@@ -22,7 +22,7 @@ interface Position {
   };
 }
 
-interface Balance {
+export interface Balance {
   coin: string;
   total: number;
   hold?: number;
@@ -32,7 +32,7 @@ interface Balance {
   unrealizedPnl?: number;
 }
 
-interface Order {
+export interface Order {
   time: string;
   type: string;
   coin: string;
@@ -90,7 +90,7 @@ export const useUserState = create<UserState>((set, get) => ({
         clearing.marginSummary.accountValue -
         clearing.marginSummary.totalMarginUsed
       ).toFixed(2),
-      usdcValue: `$${clearing.marginSummary.accountValue.toFixed(2)}`,
+      usdcValue: `${clearing.marginSummary.accountValue.toFixed(2)}`,
       unit: "USDC",
     };
 

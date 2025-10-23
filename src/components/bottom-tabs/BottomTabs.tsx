@@ -11,6 +11,7 @@ import { OrdersTab } from "./OrdersTab";
 export default function BottomTabs() {
   const positions = useUserState((s) => s.positions);
   const allBalances = useUserState((s) => s.allBalances);
+  const openOrders = useUserState((s) => s.openOrders);
   // console.log("all", allBalances);
 
   return (
@@ -36,7 +37,7 @@ export default function BottomTabs() {
             className="rounded-none data-[state=active]:bg-accent"
             data-testid="tab-open-orders"
           >
-            Open Orders({0})
+            Open Orders({openOrders.length})
           </TabsTrigger>
           <TabsTrigger
             value="trade-history"

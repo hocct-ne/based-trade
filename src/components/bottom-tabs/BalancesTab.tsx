@@ -28,13 +28,16 @@ export default function BalancesTab() {
               >
                 <td className="py-2 font-semibold">{b.coin}</td>
                 <td className="text-right">
-                  {b.total} {b.unit}
+                  {Number(b.total).toLocaleString()} {b.unit}
                 </td>
                 <td className="text-right">
-                  {b.availableBalance} {b.unit}
+                  {Number(b.availableBalance).toLocaleString()} {b.unit}
                 </td>
                 <td className="text-right">
-                  {b.usdcValue ? b.usdcValue : ""} {b.unit}
+                  {b.usdcValue
+                    ? `$${Number(b.usdcValue).toLocaleString()}`
+                    : ""}{" "}
+                  {b.unit}
                 </td>
                 <td className="text-right">-</td>
                 <td className="text-right">

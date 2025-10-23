@@ -2,6 +2,7 @@
 import { Market, useMarketState } from "@/store/useMarketState";
 import { MarketSelect } from "./MarketSelect";
 import { MarketTickerTabs } from "./MarketTickerTabs";
+import { useEffect, useState } from "react";
 
 interface MarketTickerProps {
   pair: string;
@@ -28,6 +29,21 @@ const nf4 = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 4,
 });
 
+const timeStringToSeconds = (timeString: any) => {
+  const [minutes, seconds] = timeString.split(":").map(Number);
+  return minutes * 60 + seconds;
+};
+
+const secondsToTimeString = (totalSeconds: any) => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  const formattedSeconds = String(seconds).padStart(2, "0");
+
+  return `${formattedMinutes}:${formattedSeconds}`;
+};
+
 export default function MarketTicker({
   pair,
   markPrice,
@@ -42,6 +58,9 @@ export default function MarketTicker({
   const markets = useMarketState((s) => s.markets);
   const currentMarket = markets.find(
     (m) => m.symbol.split("-")[0] === pair.split("-")[0]
+  );
+  const [timeLeft, setTimeLeft] = useState(() =>
+    timeStringToSeconds(fundingCountdown)
   );
 
   const currentMarkPx = currentMarket?.markPx
@@ -63,6 +82,22 @@ export default function MarketTicker({
   const formatValue = (value: number) => {
     return nf2.format(value);
   };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTimeLeft((prevTime: any) => {
+        if (prevTime <= 0) {
+          clearInterval(intervalId);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const countdownDisplay = secondsToTimeString(timeLeft);
   return (
     <>
       <div
@@ -136,8 +171,8 @@ export default function MarketTicker({
                   }`}
                 >
                   {formatFundingRate(Math.abs(currentFundingRate))}%
-                </span>
-                / {fundingCountdown}
+                </span>{" "}
+                / {countdownDisplay}
               </div>
             </div>
           </div>
