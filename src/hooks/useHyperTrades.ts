@@ -1,8 +1,7 @@
 "use client";
 import { client } from "@/lib/hyperClient";
-import { useEffect, useState } from "react";
-import { useHyperConnected } from "./useHyperConnected";
 import { useAppState } from "@/store/useAppState";
+import { useEffect, useState } from "react";
 
 export function useHyperTrades(symbol: string) {
   const [trades, setTrades] = useState<any[]>([]);

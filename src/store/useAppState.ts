@@ -1,4 +1,3 @@
-import { AllMids } from "@coin98-hyper/core";
 import { create } from "zustand";
 
 interface Ticker {

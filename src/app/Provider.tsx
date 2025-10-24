@@ -2,11 +2,8 @@
 "use client";
 
 import { ThemeProvider } from "@/theme/theme-provider";
-import { LanguageContextProvider } from "@/context/LanguageContextProvider";
 import { queryConfig } from "@/lib/react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-interface ProviderProps {}
 
 function makeQueryClient() {
   return new QueryClient(queryConfig);
@@ -29,21 +26,19 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" /> */}
-      <LanguageContextProvider>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          value={{
-            light: "light",
-            dark: "dark",
-            based: "theme-based",
-            dracula: "theme-dracula",
-            tokyo: "theme-tokyo",
-          }}
-        >
-          {children}
-        </ThemeProvider>
-      </LanguageContextProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        value={{
+          light: "light",
+          dark: "dark",
+          based: "theme-based",
+          dracula: "theme-dracula",
+          tokyo: "theme-tokyo",
+        }}
+      >
+        {children}
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

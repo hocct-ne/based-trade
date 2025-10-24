@@ -1,7 +1,6 @@
 "use client";
-import { useUserState } from "@/store/useUserState";
 import { Button } from "@/components/ui/button";
-import { useMarketState } from "@/store/useMarketState";
+import { useUserState } from "@/store/useUserState";
 
 export default function BalancesTab() {
   const allBalances = useUserState((s) => s.allBalances);

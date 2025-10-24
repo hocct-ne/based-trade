@@ -1,4 +1,3 @@
-import { toast } from "@/hooks/useToast";
 import { nextConfig } from "@/config";
 import { ReadonlyURLSearchParams } from "next/navigation";
 
@@ -38,7 +37,7 @@ function isString(value: any) {
 
 function toastWhenString(value: any) {
   if (isString(value)) {
-    toast({ description: value, variant: "destructive" });
+    // toast({ description: value, variant: "destructive" });
     return true;
   }
 

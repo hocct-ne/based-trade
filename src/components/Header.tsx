@@ -7,7 +7,6 @@ import { ChevronDown, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { LanguageSwitcher } from "./LanguageSwicher";
 
 interface HeaderProps {
   onConnectWallet: () => void;
@@ -23,7 +22,6 @@ export default function Header({
   walletAddress,
 }: HeaderProps) {
   const navItemsText = ["Perps", "Spot", "Affiliate"];
-  const navItemsDropDown = ["Ecosystem", "Trading", "Portfolio"];
   // const t = useTranslationsa();
   const [activeNav, setActiveNav] = useState<string | null>(null);
   return (

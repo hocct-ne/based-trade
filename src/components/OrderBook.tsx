@@ -89,11 +89,11 @@ export default function OrderBook({ symbol }: TradeFormProps) {
                 <span className={"w-1/3 text-left"}>Spread</span>
                 <span className="w-1/3 text-center text-foreground">
                   {asksValue[0] && bidsValue[0] && (
-                    <span className="text-center ml-6">
+                    <span className="text-center ml-8">
                       {Math.abs(
                         parseFloat(asksValue[0].px) -
                           parseFloat(bidsValue[0].px)
-                      ).toFixed(2)}
+                      ).toLocaleString()}
                     </span>
                   )}
                 </span>

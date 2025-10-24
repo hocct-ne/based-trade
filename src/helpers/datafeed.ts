@@ -1,7 +1,4 @@
 import { Hyperliquid } from "@coin98-hyper/core";
-
-let prevParams = {};
-
 interface SymbolInfo {
   name: string;
   ticker: string;

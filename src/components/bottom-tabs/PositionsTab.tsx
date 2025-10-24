@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useUserState } from "@/store/useUserState";
 import { useState } from "react";
 import { ClosePositionDialog } from "../ClosePositionDialog";
-import { cn } from "@/lib/utils";
 
 export default function PositionsTab() {
   const positions = useUserState((s) => s.positions);

@@ -2,10 +2,10 @@
 
 import { defaultTradingViewOptions } from "@/config";
 import { createHyperliquidDatafeed } from "@/helpers/datafeed";
-import { widget as TVWidget } from "../../public/charting_library";
 import { client } from "@/lib/hyperClient";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { widget as TVWidget } from "../../public/charting_library";
 
 interface Props {
   symbol: string;

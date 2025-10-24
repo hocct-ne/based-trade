@@ -1,9 +1,8 @@
-// hooks/useUserSnapshot.ts
 "use client";
-import { useEffect } from "react";
+import { nextConfig } from "@/config";
 import { client } from "@/lib/hyperClient";
 import { useUserState } from "@/store/useUserState";
-import { nextConfig } from "@/config";
+import { useEffect } from "react";
 
 export function useUserSnapshot() {
   const updateFromFeed = useUserState((s) => s.updateFromFeed);
@@ -15,7 +14,6 @@ export function useUserSnapshot() {
         const clearing = await client.info.perpetuals.getClearinghouseState(
           nextConfig.nextWalletAddress
         );
-        
 
         updateFromFeed({
           clearinghouseState: clearing,

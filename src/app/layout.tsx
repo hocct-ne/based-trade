@@ -12,23 +12,17 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-  params: { locale },
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string };
 }>) {
-  // unstable_setRequestLocale(locale);
-  // const messages = await getMessages();
-  console.log("Server locale:", locale);
-
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={"en"} suppressHydrationWarning>
       <body>
         {/* <NextIntlClientProvider> */}
         {/* <AppProvider> */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

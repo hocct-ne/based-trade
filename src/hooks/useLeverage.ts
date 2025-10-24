@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { get } from "lodash";
-import { client } from "@/lib/hyperClient";
 import { nextConfig } from "@/config";
+import { client } from "@/lib/hyperClient";
+import { toast } from "@/lib/toast";
 import { useAppState } from "@/store/useAppState";
 import { useMarketState } from "@/store/useMarketState";
 import { ActiveAssetDataState } from "@coin98-hyper/core";
+import { get } from "lodash";
+import { useCallback, useEffect, useState } from "react";
 import { useAgent } from "./useAgent";
-import { toast } from "@/lib/toast";
 
 export function useLeverage(symbol: string) {
   const addr = nextConfig.nextWalletAddress;

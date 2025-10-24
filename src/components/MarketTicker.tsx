@@ -1,8 +1,8 @@
 "use client";
-import { Market, useMarketState } from "@/store/useMarketState";
+import { useMarketState } from "@/store/useMarketState";
+import { useEffect, useState } from "react";
 import { MarketSelect } from "./MarketSelect";
 import { MarketTickerTabs } from "./MarketTickerTabs";
-import { useEffect, useState } from "react";
 
 interface MarketTickerProps {
   pair: string;
@@ -131,12 +131,12 @@ export default function MarketTicker({
             </div>
 
             <div>
-              <div className="min-w-[90px] text-muted-foreground mb-1">
+              <div className="min-w-[100px] text-muted-foreground mb-1">
                 24h Change
               </div>
               <div
-                className={`min-w-[90px] flex items-center gap-1 ${
-                  isPositive ? "text-[#29ab87]]" : "text-[#ff5252]"
+                className={`min-w-[110px] flex items-center gap-1 ${
+                  isPositive ? "text-[#29ab87]" : "text-[#ff5252]"
                 }`}
               >
                 {currentChange24h > 0 ? "+" : ""}
@@ -146,7 +146,7 @@ export default function MarketTicker({
             </div>
 
             <div>
-              <div className="min-w-[30px] text-muted-foreground mb-1">
+              <div className="min-w-[90px] text-muted-foreground mb-1">
                 24h Volume
               </div>
               <div className="">${formatValue(currentVolume24h)}</div>

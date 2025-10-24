@@ -1,19 +1,25 @@
 // hook to subscribe user data (WebSocket)
 "use client";
-import { useEffect } from "react";
-import { client } from "@/lib/hyperClient";
-import { Order, useUserState } from "@/store/useUserState";
 import { nextConfig } from "@/config";
-import { useHyperConnected } from "./useHyperConnected";
+import { getAllMarkets } from "@/lib/getAllMarkets";
+import { client } from "@/lib/hyperClient";
 import { useAppState } from "@/store/useAppState";
 import { useMarketState } from "@/store/useMarketState";
-import { getAllMarkets } from "@/lib/getAllMarkets";
+import { Order, useUserState } from "@/store/useUserState";
+import { useEffect } from "react";
 
 export function useUserFeed() {
   const isConnected = useAppState((s) => s.isConnected);
   const updateFromFeed = useUserState((s) => s.updateFromFeed);
   const setMarkets = useMarketState((s) => s.setMarkets);
   const updateOrder = useUserState((s) => s.updateOrder);
+
+  useEffect(() => {
+    const addr = nextConfig.nextWalletAddress;
+
+    if (!addr || !isConnected) return;
+    client.exchange.transferBetweenSpotAndPerp;
+  }, [nextConfig.nextWalletAddress, isConnected]);
 
   useEffect(() => {
     const addr = nextConfig.nextWalletAddress;

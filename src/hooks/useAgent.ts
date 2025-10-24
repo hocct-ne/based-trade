@@ -1,9 +1,9 @@
 "use client";
 
-import { ethers, TypedDataDomain, TypedDataField, Wallet } from "ethers";
+import { nextConfig } from "@/config";
 import { client } from "@/lib/hyperClient";
 import { useUserState } from "@/store/useUserState";
-import { nextConfig } from "@/config";
+import { ethers, TypedDataDomain, TypedDataField, Wallet } from "ethers";
 
 export const signTypedData = async (data: {
   domain: TypedDataDomain;

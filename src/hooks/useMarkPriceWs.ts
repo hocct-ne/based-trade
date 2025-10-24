@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import { getMarkPrice } from "@/lib/getMarkPrice";
 import { client } from "@/lib/hyperClient";
+import { useAppState } from "@/store/useAppState";
 import { useUserState } from "@/store/useUserState";
 import { AllMids } from "@coin98-hyper/core";
-import { useAppState } from "@/store/useAppState";
+import { useEffect } from "react";
 
 export function useMarkPriceWs() {
   const isConnected = useAppState((s) => s.isConnected);

@@ -1,21 +1,18 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import AccountPanel from "@/components/AccountPanel";
 import Header from "@/components/Header";
 import MarketTicker from "@/components/MarketTicker";
-import TradingChart from "@/components/TradingChart";
 import OrderBook from "@/components/OrderBook";
-import TradeForm from "@/components/TradeForm";
-import BottomTabs from "@/components/bottom-tabs/BottomTabs";
-import AccountPanel from "@/components/AccountPanel";
 import SettingsModal from "@/components/SettingsModal";
+import TradeForm from "@/components/TradeForm";
+import TradingChart from "@/components/TradingChart";
 import WalletConnectModal from "@/components/WalletConnectModal";
-import { Hyperliquid } from "@coin98-hyper/core";
-import { useUserSnapshot } from "@/hooks/useUserSnapshot";
-import { useUserFeed } from "@/hooks/useUserFeed";
-import { useMarkPriceWs } from "@/hooks/useMarkPriceWs";
+import BottomTabs from "@/components/bottom-tabs/BottomTabs";
 import { useHyperConnected } from "@/hooks/useHyperConnected";
-
-const sdk = Hyperliquid.createInstane({});
+import { useMarkPriceWs } from "@/hooks/useMarkPriceWs";
+import { useUserFeed } from "@/hooks/useUserFeed";
+import { useUserSnapshot } from "@/hooks/useUserSnapshot";
+import { useState } from "react";
 
 export default function TradingPage() {
   useUserSnapshot();
