@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,10 @@ export function LeverageSelector({
 }: LeverageSelectorProps) {
   const [open, setOpen] = useState(false);
   const [tempLev, setTempLev] = useState(value);
+
+  useEffect(() => {
+    setTempLev(value);
+  }, [value]);
 
   const handleConfirm = () => {
     onChange(tempLev);

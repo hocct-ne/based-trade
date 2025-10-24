@@ -12,6 +12,7 @@ import {
 
 import { Slider } from "@/components/ui/slider";
 import { formatQty } from "@/helpers/format";
+import { useLeverage } from "@/hooks/useLeverage";
 import { useMarkPrice } from "@/hooks/useMarkPrice";
 import { usePlaceOrder } from "@/hooks/usePlaceOrder";
 import { getMarkPrice } from "@/lib/getMarkPrice";
@@ -23,23 +24,22 @@ import { LeverageSelector } from "./LeverageSelector";
 import { MarginModeSelector } from "./MarginModeSelector";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
-
 interface TradeFormProps {
   symbol: string;
 }
 
 export default function TradeForm({ symbol }: TradeFormProps) {
+  const symbolFormat = symbol.split("-")[0];
   const { placeOrder, isPlacing } = usePlaceOrder();
-  const markPrice = useMarkPrice(symbol.split("-")[0]);
-
+  const markPrice = useMarkPrice(symbolFormat);
   const availableFunds = useUserState((s) => s.availableFunds);
   const getPositionSize = useUserState((s) => s.getPositionSize);
-  const currentPos = getPositionSize(symbol.split("-")[0]);
+  const currentPos = getPositionSize(symbolFormat);
+  const { leverage, updateLeverage } = useLeverage(symbolFormat);
 
   const [marginMode, setMarginMode] = useState<"cross" | "isolated">(
     "isolated"
   );
-  const [leverage, setLeverage] = useState(20);
   const [orderType, setOrderType] = useState<"limit" | "market">("market");
   const [side, setSide] = useState<"long" | "short">("long");
   const [price, setPrice] = useState<number>(markPrice);
@@ -233,7 +233,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
   };
 
   const handleMarkButtonClick = async () => {
-    const price = await getMarkPrice(symbol.split("-")[0]);
+    const price = await getMarkPrice(symbolFormat);
     if (price) {
       setPrice(Number(price?.toFixed(2)));
       setPriceInput(price?.toFixed(2) || "0");
@@ -242,7 +242,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
 
   const handleSubmit = async () => {
     await placeOrder({
-      symbol: `${symbol.split("-")[0]}-PERP`,
+      symbol: `${symbolFormat}-PERP`,
       side,
       // orderType,
       price,
@@ -264,11 +264,10 @@ export default function TradeForm({ symbol }: TradeFormProps) {
           />
           <LeverageSelector
             value={leverage}
-            onChange={(val) => setLeverage(val)}
-            symbol={symbol.split("-")[0]}
+            onChange={(val) => updateLeverage(val)}
+            symbol={symbolFormat}
           />
         </div>
-
         <Select value={orderType} onValueChange={(v) => setOrderType(v as any)}>
           <SelectTrigger className="flex-1 text-xs border-border">
             <SelectValue placeholder="Select type" />
@@ -379,7 +378,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
             )}
           />
           <span className="text-sm px-2 text-muted-foreground border-r-4 border-border/50">
-            {symbol.split("-")[0]}
+            {symbolFormat}
           </span>
 
           <Input
@@ -508,7 +507,7 @@ export default function TradeForm({ symbol }: TradeFormProps) {
             </>
           ) : (
             <>
-              {side === "long" ? "Long" : "Short"} {symbol.split("-")[0]}
+              {side === "long" ? "Long" : "Short"} {symbolFormat}
             </>
           )}
         </Button>

@@ -2,12 +2,12 @@
 
 import { nextConfig } from "@/config";
 import { client } from "@/lib/hyperClient";
+import { useAppState } from "@/store/useAppState";
 import { useUserState } from "@/store/useUserState";
 import { parsePlaceOrderResponse } from "@coin98-hyper/core";
-import { ethers, TypedDataDomain, TypedDataField, Wallet } from "ethers";
 import { useCallback, useState } from "react";
-import { useHyperConnected } from "./useHyperConnected";
-import { useAppState } from "@/store/useAppState";
+import { useAgent } from "./useAgent";
+import { toast } from "@/lib/toast";
 
 export enum TypeTrade {
   SPOT = "SPOT",
@@ -26,25 +26,9 @@ interface PlaceOrderParams {
   reduceOnly?: boolean;
 }
 
-export const signTypedData = async (data: {
-  domain: TypedDataDomain;
-  types: Record<string, TypedDataField[]>;
-  message: Record<string, any>;
-}) => {
-  const wallet = new ethers.Wallet(nextConfig.nextApiKey!);
-  console.log(wallet, nextConfig.nextApiKey);
-
-  const signature = await wallet.signTypedData(
-    data.domain,
-    data.types,
-    data.message
-  );
-  return signature;
-};
-
 export function usePlaceOrder() {
   const isConnected = useAppState((s) => s.isConnected);
-
+  const { ensureAgent } = useAgent();
   const [isPlacing, setIsPlacing] = useState(false);
   const [lastOrder, setLastOrder] = useState<any>(null);
   const setAvailableFundsVsPositions = useUserState(
@@ -74,16 +58,7 @@ export function usePlaceOrder() {
           price,
           reduceOnly,
         });
-        const w = Wallet.createRandom();
-        const { action, signingData } =
-          await client.exchange.prepareApproveAgent({
-            agentAddress: w.address,
-            agentName: "C98 Hyperliquid",
-          });
-
-        const sigMess = await signTypedData(signingData);
-        const data = await client.exchange.approveAgent(action, sigMess);
-        // console.log("data", data);
+        const w = await ensureAgent();
 
         const isBuy = side === "long";
         const convertedSymbol = await client.symbolConversion.convertSymbol(
@@ -100,7 +75,6 @@ export function usePlaceOrder() {
         );
 
         const convertSize = await client.convertSizePerp(convertedSymbol, size);
-
         const order = await client.exchange.placeOrder({
           agentPrivateKey: w.privateKey,
           reduce_only: reduceOnly,
@@ -131,13 +105,18 @@ export function usePlaceOrder() {
         }
 
         console.log("✅ Order placed:", order, formatResult);
+
         setLastOrder(formatResult);
-
-        if (formatResult.success) return formatResult;
-
-        throw new Error(formatResult.message);
+        if (formatResult.success) {
+          toast.success("Order submitted successfully");
+          return formatResult;
+        } else {
+          toast.error(formatResult.message || "❌ Failed to place order");
+        }
       } catch (err: any) {
         console.error("❌ Failed to place order:", err);
+        toast.error("❌ Failed to place order", err);
+
         throw err;
       } finally {
         setIsPlacing(false);

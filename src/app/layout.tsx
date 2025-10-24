@@ -1,12 +1,10 @@
 import type { Metadata } from "next/types";
-import { ReactNode } from "react";
 
 import "@/styles/global.css";
 // import { unstable_setRequestLocale } from "next-intl/server";
-import { getMessages } from "next-intl/server";
 // import { NextIntlClientProvider } from "next-intl";
-import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/theme/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "C98 Trade",
@@ -36,6 +34,7 @@ export default async function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Toaster />
         {/* </AppProvider> */}
         {/* </NextIntlClientProvider> */}
       </body>

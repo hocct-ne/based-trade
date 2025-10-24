@@ -53,6 +53,7 @@ interface UserState {
   allBalances: any[];
   markPrices: AllMids;
   openOrders: Order[];
+  agent: { address: string; privateKey: string } | null;
 
   updateFromFeed: (data: any) => void;
   setAvailableFundsVsPositions: ({
@@ -67,6 +68,8 @@ interface UserState {
   updateMarkPrices: (mids: AllMids) => void;
   updateOrder: (orders: Order[]) => void;
   // cancelOrder: (id: string) => void;
+  setAgent: (agent: { address: string; privateKey: string }) => void;
+  clearAgent: () => void;
 }
 
 export const useUserState = create<UserState>((set, get) => ({
@@ -77,6 +80,7 @@ export const useUserState = create<UserState>((set, get) => ({
   allBalances: [],
   markPrices: {},
   openOrders: [],
+  agent: null,
 
   updateFromFeed: (data) => {
     const clearing = data.clearinghouseState ?? {};
@@ -130,4 +134,6 @@ export const useUserState = create<UserState>((set, get) => ({
   updateMarkPrices: (mids) => set({ markPrices: mids }),
   updateOrder: (orders) => set({ openOrders: orders }),
   // cancelOrder:
+  setAgent: (agent) => set({ agent }),
+  clearAgent: () => set({ agent: null }),
 }));

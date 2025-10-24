@@ -434,3 +434,13 @@
   width: 0;
   height: 0;
 }
+
+[data-sonner-toast] {
+  transform: translateX(40px);
+  opacity: 0;
+  transition: all 0.25s ease-in-out;
+}
+[data-sonner-toast][data-mounted="true"] {
+  transform: translateX(0);
+  opacity: 1;
+}
